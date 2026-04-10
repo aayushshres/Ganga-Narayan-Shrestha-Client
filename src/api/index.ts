@@ -9,13 +9,16 @@ import type {
   SongFormData,
 } from "../types";
 
-const BASE = "/api";
+// const BASE = "/api";
+const BASE = import.meta.env.VITE_API_URL || "/api";
 
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
   const res = await fetch(url, { credentials: "include", ...options });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error((err as { error?: string }).error || `Request failed: ${res.status}`);
+    throw new Error(
+      (err as { error?: string }).error || `Request failed: ${res.status}`,
+    );
   }
   if (res.status === 204) return undefined as T;
   return res.json();
@@ -27,9 +30,13 @@ const json = (body: unknown): RequestInit => ({
 });
 
 // ── Articles ──────────────────────────────────────────────
-export function fetchArticles(params?: { category?: string; q?: string }): Promise<Article[]> {
+export function fetchArticles(params?: {
+  category?: string;
+  q?: string;
+}): Promise<Article[]> {
   const qs = new URLSearchParams();
-  if (params?.category && params.category !== "all") qs.set("category", params.category);
+  if (params?.category && params.category !== "all")
+    qs.set("category", params.category);
   if (params?.q) qs.set("q", params.q);
   const query = qs.toString() ? `?${qs.toString()}` : "";
   return request<Article[]>(`${BASE}/articles${query}`);
@@ -40,11 +47,20 @@ export function fetchArticle(id: string): Promise<Article> {
 }
 
 export function createArticle(data: ArticleFormData): Promise<Article> {
-  return request<Article>(`${BASE}/articles`, { method: "POST", ...json(data) });
+  return request<Article>(`${BASE}/articles`, {
+    method: "POST",
+    ...json(data),
+  });
 }
 
-export function updateArticle(id: string, data: Partial<ArticleFormData>): Promise<Article> {
-  return request<Article>(`${BASE}/articles/${id}`, { method: "PUT", ...json(data) });
+export function updateArticle(
+  id: string,
+  data: Partial<ArticleFormData>,
+): Promise<Article> {
+  return request<Article>(`${BASE}/articles/${id}`, {
+    method: "PUT",
+    ...json(data),
+  });
 }
 
 export function deleteArticle(id: string): Promise<void> {
@@ -64,7 +80,10 @@ export function createBook(data: BookFormData): Promise<Book> {
   return request<Book>(`${BASE}/books`, { method: "POST", ...json(data) });
 }
 
-export function updateBook(id: string, data: Partial<BookFormData>): Promise<Book> {
+export function updateBook(
+  id: string,
+  data: Partial<BookFormData>,
+): Promise<Book> {
   return request<Book>(`${BASE}/books/${id}`, { method: "PUT", ...json(data) });
 }
 
@@ -82,11 +101,20 @@ export function fetchInterview(id: string): Promise<Interview> {
 }
 
 export function createInterview(data: InterviewFormData): Promise<Interview> {
-  return request<Interview>(`${BASE}/interviews`, { method: "POST", ...json(data) });
+  return request<Interview>(`${BASE}/interviews`, {
+    method: "POST",
+    ...json(data),
+  });
 }
 
-export function updateInterview(id: string, data: Partial<InterviewFormData>): Promise<Interview> {
-  return request<Interview>(`${BASE}/interviews/${id}`, { method: "PUT", ...json(data) });
+export function updateInterview(
+  id: string,
+  data: Partial<InterviewFormData>,
+): Promise<Interview> {
+  return request<Interview>(`${BASE}/interviews/${id}`, {
+    method: "PUT",
+    ...json(data),
+  });
 }
 
 export function deleteInterview(id: string): Promise<void> {
@@ -106,7 +134,10 @@ export function createSong(data: SongFormData): Promise<Song> {
   return request<Song>(`${BASE}/songs`, { method: "POST", ...json(data) });
 }
 
-export function updateSong(id: string, data: Partial<SongFormData>): Promise<Song> {
+export function updateSong(
+  id: string,
+  data: Partial<SongFormData>,
+): Promise<Song> {
   return request<Song>(`${BASE}/songs/${id}`, { method: "PUT", ...json(data) });
 }
 
@@ -115,7 +146,10 @@ export function deleteSong(id: string): Promise<void> {
 }
 
 // ── Auth ──────────────────────────────────────────────────
-export function login(username: string, password: string): Promise<{ username: string }> {
+export function login(
+  username: string,
+  password: string,
+): Promise<{ username: string }> {
   return request<{ username: string }>(`${BASE}/auth/login`, {
     method: "POST",
     ...json({ username, password }),
