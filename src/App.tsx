@@ -83,7 +83,7 @@ export default function App() {
   return (
     <AppProvider>
       <AuthProvider>
-        <BrowserRouter>
+        <BrowserRouter basename={import.meta.env.BASE_URL}>
           <AppInner />
         </BrowserRouter>
       </AuthProvider>
