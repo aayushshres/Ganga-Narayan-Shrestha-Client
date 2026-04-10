@@ -4,6 +4,7 @@ import { useAppContext } from "../context/AppContext";
 import type { Interview, Translatable } from "../types";
 import { t } from "../types";
 import { fetchInterviews } from "../api/index";
+import { extractYouTubeId } from "../utils/youtube";
 import YouTubeModal from "./YouTubeModal";
 
 const pageTitle: Translatable = { en: "All Interviews", np: "सबै अन्तर्वार्ताहरू" };
@@ -35,12 +36,14 @@ export default function AllInterviews() {
           </p>
         ) : (
           interviews.map((entry) => {
-            const thumbUrl = `https://img.youtube.com/vi/${entry.youtubeId}/hqdefault.jpg`;
+            const vid = extractYouTubeId(entry.youtubeId);
+            const thumbUrl = `https://img.youtube.com/vi/${vid}/hqdefault.jpg`;
+            const thumbFallback = `https://img.youtube.com/vi/${vid}/mqdefault.jpg`;
             return (
               <div key={entry._id} className="media-card horizontal-card--list">
                 <button
                   className="media-card__thumb-btn"
-                  onClick={() => setActiveVideo(entry.youtubeId)}
+                  onClick={() => setActiveVideo(vid)}
                   aria-label={`Play: ${entry.title}`}
                 >
                   <img
@@ -48,6 +51,7 @@ export default function AllInterviews() {
                     src={thumbUrl}
                     alt={entry.title}
                     loading="lazy"
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = thumbFallback; }}
                   />
                   <span className="media-card__play" aria-hidden="true">▶</span>
                 </button>

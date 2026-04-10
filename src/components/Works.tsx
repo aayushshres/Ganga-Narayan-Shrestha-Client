@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
 import { useScrollReveal } from "../hooks/useScrollReveal";
 import { fetchArticles, fetchBooks, fetchSongs } from "../api/index";
+import { extractYouTubeId } from "../utils/youtube";
 import type { Article, Book, Song, Translatable } from "../types";
 import { t } from "../types";
 import HorizontalScroll from "./HorizontalScroll";
@@ -131,12 +132,14 @@ export default function Works() {
           <h3 className="subsection-title">{t(songsLabel, lang)}</h3>
           <HorizontalScroll className="row-wrapper">
             {songs.length > 0 && songs.map((entry) => {
-              const thumbUrl = `https://img.youtube.com/vi/${entry.youtubeId}/hqdefault.jpg`;
+              const vid = extractYouTubeId(entry.youtubeId);
+              const thumbUrl = `https://img.youtube.com/vi/${vid}/hqdefault.jpg`;
+              const thumbFallback = `https://img.youtube.com/vi/${vid}/mqdefault.jpg`;
               return (
                 <div key={entry._id} className="media-card horizontal-card">
                   <button
                     className="media-card__thumb-btn"
-                    onClick={() => setActiveVideo(entry.youtubeId)}
+                    onClick={() => setActiveVideo(vid)}
                     aria-label={`Play: ${entry.title}`}
                   >
                     <img
@@ -145,6 +148,7 @@ export default function Works() {
                       src={thumbUrl}
                       alt={entry.title}
                       loading="lazy"
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).src = thumbFallback; }}
                     />
                     <span className="media-card__play" aria-hidden="true">▶</span>
                   </button>

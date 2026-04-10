@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback } from "react";
+import { extractYouTubeId } from "../utils/youtube";
 
 interface YouTubeModalProps {
   youtubeId: string;
@@ -6,6 +7,7 @@ interface YouTubeModalProps {
 }
 
 export default function YouTubeModal({ youtubeId, onClose }: YouTubeModalProps) {
+  const videoId = extractYouTubeId(youtubeId);
   const overlayRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
@@ -56,10 +58,11 @@ export default function YouTubeModal({ youtubeId, onClose }: YouTubeModalProps) 
         <div className="yt-modal__aspect">
           <iframe
             className="yt-modal__iframe"
-            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1`}
+            src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
             title="YouTube video player"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
+            referrerPolicy="strict-origin-when-cross-origin"
           />
         </div>
       </div>
