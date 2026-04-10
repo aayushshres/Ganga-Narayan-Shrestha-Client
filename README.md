@@ -1,4 +1,4 @@
-# Politician Portfolio — Client
+# Ganga Narayan Shrestha Portfolio — Client
 
 React + Vite + TypeScript frontend.
 
