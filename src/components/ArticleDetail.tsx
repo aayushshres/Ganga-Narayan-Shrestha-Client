@@ -3,17 +3,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
 import { fetchArticle } from "../api/index";
 import { formatPostDate } from "../utils/formatDate";
+import { categoryColorMap, categoryLabelMap } from "../utils/article";
+import DOMPurify from "dompurify";
 import type { Article } from "../types";
 
-const categoryColorMap: Record<string, string> = {
-  article: "latest-card__badge--article",
-  literature: "latest-card__badge--literature",
-};
-
-const categoryLabelMap: Record<string, { en: string; np: string }> = {
-  article: { en: "Article", np: "लेख" },
-  literature: { en: "Literature", np: "साहित्य" },
-};
+const SITE_TITLE = "गंगानारायण श्रेष्ठ — Ganga Narayan Shrestha";
 
 export default function ArticleDetail() {
   const { id } = useParams<{ id: string }>();
@@ -36,6 +30,9 @@ export default function ArticleDetail() {
       })
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));
+    return () => {
+      document.title = SITE_TITLE;
+    };
   }, [id]);
 
   if (loading) {
@@ -74,7 +71,10 @@ export default function ArticleDetail() {
       <p style={{ textAlign: "center", color: "var(--text-muted)", fontSize: "0.9rem", marginBottom: "2rem" }}>
         {formatPostDate(article.createdAt, lang)}
       </p>
-      <div className="detail-page__body" dangerouslySetInnerHTML={{ __html: article.content }} />
+      <div
+        className="detail-page__body"
+        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.content) }}
+      />
       <div style={{ marginTop: "3rem", textAlign: "center", borderTop: "1px solid var(--border-light)", paddingTop: "2rem" }}>
         <button
           onClick={async () => {

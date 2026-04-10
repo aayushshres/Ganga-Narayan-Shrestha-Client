@@ -4,6 +4,7 @@ import { useAppContext } from "../context/AppContext";
 import type { Book, Translatable } from "../types";
 import { t } from "../types";
 import { fetchBooks } from "../api/index";
+import BookCover from "./BookCover";
 
 const pageTitle: Translatable = { en: "All Published Books", np: "सबै प्रकाशित पुस्तकहरू" };
 
@@ -42,13 +43,6 @@ export default function AllBooks() {
                 ? `${entry.yearBs} बि.सं.`
                 : `${entry.yearBs} BS`;
 
-            const svgColor = theme === "dark" ? "#6B0F0F" : "#8B1A1A";
-            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="220" height="320">
-              <rect width="100%" height="100%" fill="${svgColor}" />
-              <text x="50%" y="50%" fill="white" font-family="'Tiro Devanagari', serif" font-size="20" text-anchor="middle" dominant-baseline="middle" font-weight="bold">${entry.titleNp}</text>
-            </svg>`;
-            const svgURI = `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-
             return (
               <Link
                 key={entry._id}
@@ -57,7 +51,7 @@ export default function AllBooks() {
                 style={{ display: "block", textDecoration: "none" }}
               >
                 <div className="book-card__cover">
-                  <img src={svgURI} alt={entry.titleNp} />
+                  <BookCover titleNp={entry.titleNp} theme={theme} />
                 </div>
                 <h4 className="book-card__title" style={{ marginTop: "1rem" }}>{entry.titleNp}</h4>
                 <p className="book-card__type">{entry.typeEn}</p>

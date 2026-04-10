@@ -1,22 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
 import type { Article, Translatable } from "../types";
 import { t } from "../types";
 import { fetchArticles } from "../api/index";
 import { formatPostDate } from "../utils/formatDate";
+import { categoryColorMap, categoryLabelMap } from "../utils/article";
 
 const pageTitle: Translatable = { en: "All Articles & Literature", np: "सबै लेख तथा साहित्य" };
 
-const categoryColorMap: Record<string, string> = {
-  article: "latest-card__badge--article",
-  literature: "latest-card__badge--literature",
-};
-
-const categoryLabelMap: Record<string, Translatable> = {
-  article: { en: "Article", np: "लेख" },
-  literature: { en: "Literature", np: "साहित्य" },
-};
+const PAGE_LIMIT = 20;
 
 export default function AllArticles() {
   const { lang } = useAppContext();
@@ -24,25 +17,60 @@ export default function AllArticles() {
 
   const [entries, setEntries] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(1);
   const [category, setCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [debouncedQuery, setDebouncedQuery] = useState<string>("");
+  const [searchFocused, setSearchFocused] = useState(false);
+
+  // Ref to carry current filter values into the "load more" effect without re-triggering it
+  const filterRef = useRef({ category, debouncedQuery });
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedQuery(searchQuery), 400);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
+  // Fresh load whenever filters change — replaces entries
   useEffect(() => {
+    filterRef.current = { category, debouncedQuery };
+    setPage(1);
+    setHasMore(true);
     setLoading(true);
-    const params: { category?: string; q?: string } = {};
+
+    const params: Parameters<typeof fetchArticles>[0] = { page: 1, limit: PAGE_LIMIT };
     if (category !== "all") params.category = category;
     if (debouncedQuery.trim().length >= 2) params.q = debouncedQuery;
+
     fetchArticles(params)
-      .then(setEntries)
+      .then((data) => {
+        setEntries(data);
+        setHasMore(data.length === PAGE_LIMIT);
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [debouncedQuery, category]);
+
+  // Append load when page advances (triggered by "Load more")
+  useEffect(() => {
+    if (page === 1) return;
+    setLoadingMore(true);
+
+    const { category: cat, debouncedQuery: q } = filterRef.current;
+    const params: Parameters<typeof fetchArticles>[0] = { page, limit: PAGE_LIMIT };
+    if (cat !== "all") params.category = cat;
+    if (q.trim().length >= 2) params.q = q;
+
+    fetchArticles(params)
+      .then((data) => {
+        setEntries((prev) => [...prev, ...data]);
+        setHasMore(data.length === PAGE_LIMIT);
+      })
+      .catch(console.error)
+      .finally(() => setLoadingMore(false));
+  }, [page]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="detail-page">
@@ -79,6 +107,8 @@ export default function AllArticles() {
           placeholder={lang === "np" ? "खोज्नुहोस्..." : "Search..."}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          onFocus={() => setSearchFocused(true)}
+          onBlur={() => setSearchFocused(false)}
           style={{
             width: "100%",
             padding: "1rem",
@@ -90,6 +120,11 @@ export default function AllArticles() {
             fontFamily: "var(--font-body)",
           }}
         />
+        {searchFocused && searchQuery.length < 2 && (
+          <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "0.4rem", textAlign: "center" }}>
+            {lang === "np" ? "खोज्न कम्तीमा २ अक्षर टाइप गर्नुहोस्" : "Type at least 2 characters to search"}
+          </p>
+        )}
       </div>
 
       <div className="latest-list latest-list--full">
@@ -117,6 +152,29 @@ export default function AllArticles() {
           })
         )}
       </div>
+
+      {!loading && hasMore && (
+        <div style={{ textAlign: "center", marginTop: "2rem" }}>
+          <button
+            onClick={() => setPage((p) => p + 1)}
+            disabled={loadingMore}
+            style={{
+              padding: "0.75rem 2rem",
+              borderRadius: "20px",
+              border: "1px solid var(--border-color)",
+              background: "var(--bg-card)",
+              color: "var(--text-primary)",
+              cursor: loadingMore ? "not-allowed" : "pointer",
+              fontFamily: "var(--font-display)",
+              fontSize: "1rem",
+            }}
+          >
+            {loadingMore
+              ? (lang === "np" ? "लोड हुँदैछ..." : "Loading...")
+              : (lang === "np" ? "थप हेर्नुहोस्" : "Load more")}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

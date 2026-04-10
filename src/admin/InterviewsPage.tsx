@@ -7,23 +7,7 @@ import {
   deleteInterview,
 } from "../api/index";
 import type { Interview, InterviewFormData } from "../types";
-
-const inputStyle = {
-  padding: "0.75rem",
-  borderRadius: "4px",
-  border: "1px solid var(--border-color)",
-  background: "var(--bg-primary)",
-  color: "var(--text-primary)",
-  width: "100%",
-  fontFamily: "var(--font-body)",
-  fontSize: "1rem",
-  boxSizing: "border-box" as const,
-};
-const labelStyle = {
-  display: "block",
-  marginBottom: "0.4rem",
-  fontWeight: "bold" as const,
-};
+import { inputStyle, labelStyle } from "../styles/admin";
 
 export default function InterviewsPage() {
   const { isAuthenticated } = useAuth();

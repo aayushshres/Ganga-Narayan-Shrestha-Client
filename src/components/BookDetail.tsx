@@ -24,6 +24,9 @@ export default function BookDetail() {
       })
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));
+    return () => {
+      document.title = "गंगानारायण श्रेष्ठ — Ganga Narayan Shrestha";
+    };
   }, [id]);
 
   if (loading) {

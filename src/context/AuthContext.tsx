@@ -3,7 +3,6 @@ import { login as apiLogin, logout as apiLogout, setToken } from '../api/index';
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  loading: boolean;
   username: string | null;
   login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -36,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, loading: false, username, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, username, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

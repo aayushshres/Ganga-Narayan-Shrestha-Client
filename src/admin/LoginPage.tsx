@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { inputStyle } from '../styles/admin';
 
 export default function LoginPage() {
   const { isAuthenticated, login } = useAuth();
@@ -28,18 +29,6 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const inputStyle = {
-    width: '100%',
-    padding: '0.75rem',
-    borderRadius: '4px',
-    border: '1px solid var(--border-color)',
-    background: 'var(--bg-primary)',
-    color: 'var(--text-primary)',
-    fontSize: '1rem',
-    fontFamily: 'var(--font-body)',
-    boxSizing: 'border-box' as const,
   };
 
   return (

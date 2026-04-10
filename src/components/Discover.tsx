@@ -41,7 +41,6 @@ export default function Discover() {
 
         {/* Interviews Subsection */}
         <div className="subsection reveal" ref={interviewsRef}>
-          <h3 className="subsection-title">{t(sectionTitle, lang)}</h3>
           {interviews.length === 0 && (
             <p style={{ color: "var(--text-muted)", padding: "1rem 0" }}>
               {lang === "np" ? "हाल कुनै अन्तर्वार्ता उपलब्ध छैन।" : "No interviews available yet."}

@@ -2,28 +2,13 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import {
   fetchArticles,
+  fetchArticle,
   createArticle,
   updateArticle,
   deleteArticle,
 } from "../api/index";
 import type { Article, ArticleFormData } from "../types";
-
-const inputStyle = {
-  padding: "0.75rem",
-  borderRadius: "4px",
-  border: "1px solid var(--border-color)",
-  background: "var(--bg-primary)",
-  color: "var(--text-primary)",
-  width: "100%",
-  fontFamily: "var(--font-body)",
-  fontSize: "1rem",
-  boxSizing: "border-box" as const,
-};
-const labelStyle = {
-  display: "block",
-  marginBottom: "0.4rem",
-  fontWeight: "bold" as const,
-};
+import { inputStyle, labelStyle } from "../styles/admin";
 
 export default function ArticlesPage() {
   const { isAuthenticated } = useAuth();
@@ -94,12 +79,13 @@ export default function ArticlesPage() {
     }
   };
 
-  const startEdit = (a: Article) => {
-    setEditId(a._id);
-    setEditTitle(a.title);
-    setEditCategory(a.category);
-    setEditExcerpt(a.excerpt);
-    setEditContent(a.content);
+  const startEdit = async (a: Article) => {
+    const full = await fetchArticle(a._id).catch(() => a);
+    setEditId(full._id);
+    setEditTitle(full.title);
+    setEditCategory(full.category);
+    setEditExcerpt(full.excerpt);
+    setEditContent(full.content);
   };
 
   const handleSave = async () => {

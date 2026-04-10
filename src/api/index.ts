@@ -18,7 +18,15 @@ export function setToken(t: string | null): void {
   else sessionStorage.removeItem("admin_token");
 }
 
+const _cache = new Map<string, unknown>();
+
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
+  const method = (options?.method ?? "GET").toUpperCase();
+
+  if (method === "GET" && _cache.has(url)) {
+    return _cache.get(url) as T;
+  }
+
   const authHeaders: Record<string, string> = _token
     ? { Authorization: `Bearer ${_token}` }
     : {};
@@ -33,8 +41,17 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
       (err as { error?: string }).error || `Request failed: ${res.status}`,
     );
   }
-  if (res.status === 204) return undefined as T;
-  return res.json();
+  if (res.status === 204) {
+    _cache.clear();
+    return undefined as T;
+  }
+  const data = (await res.json()) as T;
+  if (method === "GET") {
+    _cache.set(url, data);
+  } else {
+    _cache.clear();
+  }
+  return data;
 }
 
 const json = (body: unknown): RequestInit => ({
@@ -46,11 +63,15 @@ const json = (body: unknown): RequestInit => ({
 export function fetchArticles(params?: {
   category?: string;
   q?: string;
+  limit?: number;
+  page?: number;
 }): Promise<Article[]> {
   const qs = new URLSearchParams();
   if (params?.category && params.category !== "all")
     qs.set("category", params.category);
   if (params?.q) qs.set("q", params.q);
+  if (params?.limit) qs.set("limit", String(params.limit));
+  if (params?.page) qs.set("page", String(params.page));
   const query = qs.toString() ? `?${qs.toString()}` : "";
   return request<Article[]>(`${BASE}/articles${query}`);
 }

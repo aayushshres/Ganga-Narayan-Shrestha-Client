@@ -27,8 +27,11 @@ export default function HorizontalScroll({ children, className = "" }: Horizonta
 
   useEffect(() => {
     checkScroll();
-    window.addEventListener("resize", checkScroll);
-    return () => window.removeEventListener("resize", checkScroll);
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(checkScroll);
+    ro.observe(el);
+    return () => ro.disconnect();
   }, [children]);
 
   useEffect(() => {

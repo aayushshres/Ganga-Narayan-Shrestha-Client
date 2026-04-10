@@ -3,10 +3,8 @@ import { useAuth } from "../context/AuthContext";
 import AdminNav from "./AdminNav";
 
 export default function AdminLayout() {
-  const { isAuthenticated, loading, logout } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
-
-  if (loading) return null;
 
   if (!isAuthenticated) {
     return <Navigate to="/admin/login" replace />;
