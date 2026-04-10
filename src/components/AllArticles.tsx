@@ -4,6 +4,7 @@ import { useAppContext } from "../context/AppContext";
 import type { Article, Translatable } from "../types";
 import { t } from "../types";
 import { fetchArticles } from "../api/index";
+import { formatPostDate } from "../utils/formatDate";
 
 const pageTitle: Translatable = { en: "All Articles & Literature", np: "सबै लेख तथा साहित्य" };
 
@@ -110,6 +111,7 @@ export default function AllArticles() {
                 </span>
                 <h3 className="latest-card__title">{entry.title}</h3>
                 <p className="latest-card__excerpt">{entry.excerpt}</p>
+                <p className="latest-card__date">{formatPostDate(entry.createdAt, lang)}</p>
               </Link>
             );
           })

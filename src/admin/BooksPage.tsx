@@ -108,7 +108,7 @@ export default function BooksPage() {
   return (
     <div>
       <h2 style={{ fontFamily: "var(--font-display)", marginBottom: "1.5rem" }}>
-        नयाँ पुस्तक थप्नुहोस्
+        नयाँ पुस्तक पोस्ट गर्नुहोस्
       </h2>
 
       <div
@@ -177,7 +177,7 @@ export default function BooksPage() {
               fontSize: "1.1rem",
             }}
           >
-            {isSubmitting ? "थप्दैछ..." : "थप्नुहोस्"}
+            {isSubmitting ? "थप्दैछ..." : "पोस्ट गर्नुहोस्"}
           </button>
         </div>
       </div>
@@ -377,7 +377,7 @@ export default function BooksPage() {
                         fontSize: "0.9rem",
                       }}
                     >
-                      मेट्नुहोस्
+                      डिलिट
                     </button>
                   </td>
                 </tr>

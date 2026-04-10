@@ -31,6 +31,10 @@ export default function AllBooks() {
           <p style={{ gridColumn: "1 / -1", textAlign: "center", padding: "2rem", color: "var(--text-muted)" }}>
             {lang === "np" ? "लोड हुँदैछ..." : "Loading..."}
           </p>
+        ) : books.length === 0 ? (
+          <p style={{ gridColumn: "1 / -1", textAlign: "center", padding: "2rem", color: "var(--text-muted)" }}>
+            {lang === "np" ? "हाल कुनै पुस्तक उपलब्ध छैन।" : "No books available yet."}
+          </p>
         ) : (
           books.map((entry) => {
             const yearDisplay =

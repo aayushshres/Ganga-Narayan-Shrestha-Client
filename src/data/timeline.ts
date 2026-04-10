@@ -31,7 +31,7 @@ export const timelineData: TimelineEntry[] = [
       np: "२०५२ सालमा अनेरास्ववियू (क्रान्तिकारी) को केन्द्रीय महासचिवमा निर्वाचित। नेपाली वाम राजनीतिको निर्णायक मोडमा राष्ट्रिय स्तरमा विद्यार्थी संगठनको नेतृत्व।",
     },
   },
-    {
+  {
     id: 4,
     // year: { en: "1988", np: "२०४५" },
     heading: {
@@ -39,7 +39,7 @@ export const timelineData: TimelineEntry[] = [
       np: "नेकपा (माओवादी केन्द्र) को केन्द्रीय सचिव",
     },
     description: {
-      en: "Having taken party membership in 2045 BS, he rose through the ranks as a District Committee Member in 2047 BS, then as an Alternate Central Member of CPN (Maoist) in 2060 BS, and subsequently as a Politburo Member of the Unified CPN (Maoist Centre) from 2071 BS. He then left Maoist Centre and served as a Central Member and Headquarters Member of Naya Shakti Party from 2072 to 2075 BS. Following Naya Shakti, he became Central General Secretary of Samajwadi Party from Baisakh 2076 BS, and then Central Executive Member of Janata Samajwadi Party, Nepal from Baisakh 2077 BS. After the formation of Nepal Samajwadi Party in 2079 BS, he served as its Central Co-chairperson. In Ashadh 2082 BS, he led the reorganization of Nepal Samajwadi Party under his own convenorship. On a date in Ashadh 2082 BS, he completed party unification with CPN (Maoist Centre) and assumed the responsibility of Central Secretary of the party. He currently holds the responsibility of …… in the Communist Party of Nepal.",
+      en: "Having taken party membership in 2045 BS, he rose through the ranks as a District Committee Member in 2047 BS, then as an Alternate Central Member of CPN (Maoist) in 2060 BS, and subsequently as a Politburo Member of the Unified CPN (Maoist Centre) from 2071 BS. He then left Maoist Centre and served as a Central Member and Headquarters Member of Naya Shakti Party from 2072 to 2075 BS. Following Naya Shakti, he became Central General Secretary of Samajwadi Party from Baisakh 2076 BS, and then Central Executive Member of Janata Samajwadi Party, Nepal from Baisakh 2077 BS. After the formation of Nepal Samajwadi Party in 2079 BS, he served as its Central Co-chairperson. In Ashadh 2082 BS, he led the reorganization of Nepal Samajwadi Party under his own convenorship. On a date in Ashadh 2082 BS, he completed party unification with CPN (Maoist Centre) and assumed the responsibility of Central Secretary of the party. He currently holds the responsibility of Central Work Coordination Committee Member in the Communist Party of Nepal.",
       np: "२०४५ मा पार्टी सदस्यता लिएका उनले २०४७ मा जिल्ला कमिटी सदस्य हुँदै २०६० सालमा ने.क.पा. (माओवादी) को वैकल्पिक केन्द्रीय सदस्य, २०७१ देखि एकीकृत ने.क.पा. (माओवादी केन्द्र) को पोलिटब्युरो सदस्य । त्यसपछि माओवादी केन्द्र परित्याग गरी २०७२ देखि २०७५ सम्म नयाँ शक्ति पार्टीको केन्द्रीय सदस्य हुँदै हेडक्वार्टर सदस्य । नयाँ शक्ति पार्टीपछि २०७६ वैशाखदेखि समाजवादी पार्टीको केन्द्रीय महासचिव हुँदै २०७७ वैशाखदेखि जनता समाजवादी पार्टी, नेपालको केन्द्रीय कार्यकारिणी सदस्य । २०७९ मा नेपाल समाजवादी पार्टी गठनपश्चात् सो पार्टीको केन्द्रीय सहध्यक्ष । २०८२ असारमा आफ्नै संयोजकत्वमा नेपाल समाजवादी पुनर्गठन । २०८२ असार गते नेकपा (माओवादी) केन्द्रसँग पार्टी एकता सम्पन्न गरी पार्टीको केन्द्रीय सचिवको जिम्मेवारी । हाल नेपाली कम्युनिस्ट पार्टीको केन्द्रीय कार्य संयोजन समिति सदस्य जिम्मेवारीमा रहेको ।",
     },
   },

@@ -34,6 +34,10 @@ export default function AllInterviews() {
           <p style={{ gridColumn: "1 / -1", textAlign: "center", padding: "2rem", color: "var(--text-muted)" }}>
             {lang === "np" ? "लोड हुँदैछ..." : "Loading..."}
           </p>
+        ) : interviews.length === 0 ? (
+          <p style={{ gridColumn: "1 / -1", textAlign: "center", padding: "2rem", color: "var(--text-muted)" }}>
+            {lang === "np" ? "हाल कुनै अन्तर्वार्ता उपलब्ध छैन।" : "No interviews available yet."}
+          </p>
         ) : (
           interviews.map((entry) => {
             const vid = extractYouTubeId(entry.youtubeId);

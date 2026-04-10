@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
 import { fetchArticle } from "../api/index";
+import { formatPostDate } from "../utils/formatDate";
 import type { Article } from "../types";
 
 const categoryColorMap: Record<string, string> = {
@@ -70,6 +71,9 @@ export default function ArticleDetail() {
         </span>
       </div>
       <h1 className="detail-page__title">{article.title}</h1>
+      <p style={{ textAlign: "center", color: "var(--text-muted)", fontSize: "0.9rem", marginBottom: "2rem" }}>
+        {formatPostDate(article.createdAt, lang)}
+      </p>
       <div className="detail-page__body" dangerouslySetInnerHTML={{ __html: article.content }} />
       <div style={{ marginTop: "3rem", textAlign: "center", borderTop: "1px solid var(--border-light)", paddingTop: "2rem" }}>
         <button

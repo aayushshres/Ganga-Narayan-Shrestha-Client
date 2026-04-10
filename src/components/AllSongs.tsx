@@ -34,6 +34,10 @@ export default function AllSongs() {
           <p style={{ gridColumn: "1 / -1", textAlign: "center", padding: "2rem", color: "var(--text-muted)" }}>
             {lang === "np" ? "लोड हुँदैछ..." : "Loading..."}
           </p>
+        ) : songs.length === 0 ? (
+          <p style={{ gridColumn: "1 / -1", textAlign: "center", padding: "2rem", color: "var(--text-muted)" }}>
+            {lang === "np" ? "हाल कुनै गीत उपलब्ध छैन।" : "No songs available yet."}
+          </p>
         ) : (
           songs.map((entry) => {
             const vid = extractYouTubeId(entry.youtubeId);

@@ -18,8 +18,8 @@ const title: Translatable = {
 };
 
 const quote: Translatable = {
-  en: "The struggle of the working people is the foundation of a just society. My life has been dedicated to this truth.",
-  np: "श्रमिक जनताको संघर्ष नै न्यायपूर्ण समाजको आधार हो। मेरो जीवन यही सत्यमा समर्पित छ।",
+  en: "Committed to building a prosperous and advanced Nepal rooted in a modern, evolving Marxist framework. We will put an end to all forms of discrimination, inequality, injustice, exploitation, and oppression. Our nation will stand on the pillars of justice, equality, freedom, and fraternity, ensuring a bright and dignified future for every citizen.",
+  np: "युगानुकूल विकसित मार्क्सवादी विचारको जगमा सबै प्रकारका विभेद, असमानता, अन्याय, शोषण, दमनको अन्त्य गर्दै न्याय, समानता, स्वतन्त्रता र भातृत्वमा आधारित समृद्ध  र समुन्नत नेपाल निर्माण ।",
 };
 
 export default function Hero() {
