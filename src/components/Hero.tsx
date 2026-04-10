@@ -40,7 +40,7 @@ export default function Hero() {
         <div className="hero-image-wrapper">
           <img
             className="hero-image"
-            src="/portrait.png"
+            src={`${import.meta.env.BASE_URL}portrait.png`}
             alt="कम्रेड गंगानारायण श्रेष्ठ — Comrade Ganga Narayan Shrestha"
           />
         </div>
