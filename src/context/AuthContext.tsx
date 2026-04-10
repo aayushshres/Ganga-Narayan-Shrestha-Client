@@ -12,12 +12,17 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [username, setUsername] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    () => !!sessionStorage.getItem("admin_token"),
+  );
+  const [username, setUsername] = useState<string | null>(
+    () => sessionStorage.getItem("admin_username"),
+  );
 
   const login = async (u: string, password: string) => {
     const data = await apiLogin(u, password);
     setToken(data.token);
+    sessionStorage.setItem("admin_username", data.username);
     setIsAuthenticated(true);
     setUsername(data.username);
   };
@@ -25,6 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     await apiLogout().catch(() => {});
     setToken(null);
+    sessionStorage.removeItem("admin_username");
     setIsAuthenticated(false);
     setUsername(null);
   };

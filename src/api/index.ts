@@ -11,9 +11,11 @@ import type {
 
 const BASE = import.meta.env.VITE_API_URL || "/api";
 
-let _token: string | null = null;
+let _token: string | null = sessionStorage.getItem("admin_token");
 export function setToken(t: string | null): void {
   _token = t;
+  if (t) sessionStorage.setItem("admin_token", t);
+  else sessionStorage.removeItem("admin_token");
 }
 
 async function request<T>(url: string, options?: RequestInit): Promise<T> {

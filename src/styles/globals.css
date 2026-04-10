@@ -26,7 +26,7 @@
   --border-light: #DDD6C8;
   --red-panel-bg: var(--crimson);
   --red-panel-text: #F5F0E8;
-  --nav-bg: rgba(245, 240, 232, 0.92);
+  --nav-bg: #F5F0E8;
   --nav-border: rgba(139, 26, 26, 0.2);
   --shadow: 0 2px 20px rgba(42, 42, 40, 0.08);
   --shadow-heavy: 0 8px 40px rgba(42, 42, 40, 0.12);
@@ -45,7 +45,7 @@
   --border-light: #333330;
   --red-panel-bg: var(--crimson-deep);
   --red-panel-text: #E8E4DC;
-  --nav-bg: rgba(26, 26, 26, 0.94);
+  --nav-bg: #1A1A1A;
   --nav-border: rgba(178, 34, 34, 0.3);
   --shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
   --shadow-heavy: 0 8px 40px rgba(0, 0, 0, 0.4);
@@ -117,8 +117,6 @@ a {
   right: 0;
   z-index: 1000;
   background: var(--nav-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--nav-border);
   padding: 0 2rem;
   height: 64px;
@@ -832,7 +830,6 @@ body.lang-np .section-label {
     left: 0;
     right: 0;
     background: var(--nav-bg);
-    backdrop-filter: blur(12px);
     flex-direction: column;
     padding: 1.5rem 2rem;
     gap: 1.2rem;
