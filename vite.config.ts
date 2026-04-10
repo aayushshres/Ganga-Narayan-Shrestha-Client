@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
-    base: "/Ganga-Narayan-Shrestha-Client/", // ← add this (match your repo name exactly)
+    base: env.VITE_BASE_PATH || "/Ganga-Narayan-Shrestha-Client/",
     server: {
       proxy: {
         "/api": backendUrl,
