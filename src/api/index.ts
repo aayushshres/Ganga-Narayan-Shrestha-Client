@@ -11,8 +11,20 @@ import type {
 
 const BASE = import.meta.env.VITE_API_URL || "/api";
 
+let _token: string | null = null;
+export function setToken(t: string | null): void {
+  _token = t;
+}
+
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(url, { credentials: "include", ...options });
+  const authHeaders: Record<string, string> = _token
+    ? { Authorization: `Bearer ${_token}` }
+    : {};
+  const res = await fetch(url, {
+    credentials: "include",
+    ...options,
+    headers: { ...authHeaders, ...(options?.headers as Record<string, string>) },
+  });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(
@@ -148,8 +160,8 @@ export function deleteSong(id: string): Promise<void> {
 export function login(
   username: string,
   password: string,
-): Promise<{ username: string }> {
-  return request<{ username: string }>(`${BASE}/auth/login`, {
+): Promise<{ username: string; token: string }> {
+  return request<{ username: string; token: string }>(`${BASE}/auth/login`, {
     method: "POST",
     ...json({ username, password }),
   });

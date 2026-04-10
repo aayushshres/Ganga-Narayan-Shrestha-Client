@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { login as apiLogin, logout as apiLogout, getMe } from '../api/index';
+import { createContext, useContext, useState, type ReactNode } from 'react';
+import { login as apiLogin, logout as apiLogout, setToken } from '../api/index';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -14,36 +14,23 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    getMe()
-      .then((data) => {
-        setIsAuthenticated(true);
-        setUsername(data.username);
-      })
-      .catch(() => {
-        setIsAuthenticated(false);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, []);
 
   const login = async (u: string, password: string) => {
     const data = await apiLogin(u, password);
+    setToken(data.token);
     setIsAuthenticated(true);
     setUsername(data.username);
   };
 
   const logout = async () => {
     await apiLogout().catch(() => {});
+    setToken(null);
     setIsAuthenticated(false);
     setUsername(null);
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, loading, username, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, loading: false, username, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
