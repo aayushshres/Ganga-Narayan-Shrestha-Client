@@ -26,7 +26,7 @@ const labelStyle = {
 };
 
 export default function ArticlesPage() {
-  const { token } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitSuccess, setSubmitSuccess] = useState("");
@@ -62,14 +62,14 @@ export default function ArticlesPage() {
   }, []);
 
   const handleAdd = async () => {
-    if (!token || !title || !excerpt || !content) return;
+    if (!isAuthenticated || !title || !excerpt || !content) return;
     setSubmitError("");
     setSubmitSuccess("");
     setIsSubmitting(true);
 
     const data: ArticleFormData = { title, category, excerpt, content };
     try {
-      await createArticle(data, token);
+      await createArticle(data);
       setSubmitSuccess("लेख सफलतापूर्वक सिर्जना गरियो!");
       setTitle("");
       setCategory("article");
@@ -85,10 +85,9 @@ export default function ArticlesPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!token) return;
     if (!window.confirm("यो लेख मेट्ने?")) return;
     try {
-      await deleteArticle(id, token);
+      await deleteArticle(id);
       setArticles(articles.filter((a) => a._id !== id));
     } catch (err: unknown) {
       alert((err as Error).message || "Unknown error");
@@ -104,19 +103,15 @@ export default function ArticlesPage() {
   };
 
   const handleSave = async () => {
-    if (!token || !editId) return;
+    if (!editId) return;
     setIsSaving(true);
     try {
-      const updated = await updateArticle(
-        editId,
-        {
-          title: editTitle,
-          category: editCategory,
-          excerpt: editExcerpt,
-          content: editContent,
-        },
-        token,
-      );
+      const updated = await updateArticle(editId, {
+        title: editTitle,
+        category: editCategory,
+        excerpt: editExcerpt,
+        content: editContent,
+      });
       setArticles(articles.map((a) => (a._id === editId ? updated : a)));
       setEditId(null);
     } catch (err: unknown) {

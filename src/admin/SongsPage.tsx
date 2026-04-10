@@ -21,7 +21,7 @@ const labelStyle = {
 };
 
 export default function SongsPage() {
-  const { token } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [songs, setSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitSuccess, setSubmitSuccess] = useState("");
@@ -48,14 +48,14 @@ export default function SongsPage() {
   }, []);
 
   const handleAdd = async () => {
-    if (!token || !title || !youtubeId) return;
+    if (!isAuthenticated || !title || !youtubeId) return;
     setSubmitError("");
     setSubmitSuccess("");
     setIsSubmitting(true);
 
     const data: SongFormData = { title, youtubeId, order: 0 };
     try {
-      await createSong(data, token);
+      await createSong(data);
       setSubmitSuccess("गीत सफलतापूर्वक थपियो!");
       setTitle("");
       setYoutubeId("");
@@ -69,10 +69,9 @@ export default function SongsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!token) return;
     if (!window.confirm("यो गीत मेट्ने?")) return;
     try {
-      await deleteSong(id, token);
+      await deleteSong(id);
       setSongs(songs.filter((s) => s._id !== id));
     } catch (err: unknown) {
       alert((err as Error).message || "Unknown error");
@@ -85,10 +84,10 @@ export default function SongsPage() {
   };
 
   const handleSave = async () => {
-    if (!token || !editId) return;
+    if (!editId) return;
     setIsSaving(true);
     try {
-      const updated = await updateSong(editId, editData, token);
+      const updated = await updateSong(editId, editData);
       setSongs(songs.map((s) => (s._id === editId ? updated : s)));
       setEditId(null);
     } catch (err: unknown) {

@@ -26,7 +26,7 @@ const labelStyle = {
 };
 
 export default function InterviewsPage() {
-  const { token } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [interviews, setInterviews] = useState<Interview[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitSuccess, setSubmitSuccess] = useState("");
@@ -54,14 +54,14 @@ export default function InterviewsPage() {
   }, []);
 
   const handleAdd = async () => {
-    if (!token || !title || !channel || !youtubeId) return;
+    if (!isAuthenticated || !title || !channel || !youtubeId) return;
     setSubmitError("");
     setSubmitSuccess("");
     setIsSubmitting(true);
 
     const data: InterviewFormData = { title, channel, youtubeId, order: 0 };
     try {
-      await createInterview(data, token);
+      await createInterview(data);
       setSubmitSuccess("अन्तर्वार्ता सफलतापूर्वक थपियो!");
       setTitle("");
       setChannel("");
@@ -76,10 +76,9 @@ export default function InterviewsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!token) return;
     if (!window.confirm("यो अन्तर्वार्ता मेट्ने?")) return;
     try {
-      await deleteInterview(id, token);
+      await deleteInterview(id);
       setInterviews(interviews.filter((i) => i._id !== id));
     } catch (err: unknown) {
       alert((err as Error).message || "Unknown error");
@@ -97,10 +96,10 @@ export default function InterviewsPage() {
   };
 
   const handleSave = async () => {
-    if (!token || !editId) return;
+    if (!editId) return;
     setIsSaving(true);
     try {
-      const updated = await updateInterview(editId, editData, token);
+      const updated = await updateInterview(editId, editData);
       setInterviews(interviews.map((i) => (i._id === editId ? updated : i)));
       setEditId(null);
     } catch (err: unknown) {

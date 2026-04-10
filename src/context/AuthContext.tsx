@@ -1,46 +1,49 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { login as apiLogin, logout as apiLogout, getMe } from '../api/index';
 
 interface AuthContextType {
-  token: string | null;
   isAuthenticated: boolean;
+  loading: boolean;
+  username: string | null;
   login: (username: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [token, setToken] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [username, setUsername] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const stored = localStorage.getItem('admin_token');
-    if (stored) setToken(stored);
+    getMe()
+      .then((data) => {
+        setIsAuthenticated(true);
+        setUsername(data.username);
+      })
+      .catch(() => {
+        setIsAuthenticated(false);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
-  const login = async (username: string, password: string) => {
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-    });
-
-    if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}));
-      throw new Error(errorData.error || 'Login failed');
-    }
-
-    const { token: newToken } = await res.json();
-    localStorage.setItem('admin_token', newToken);
-    setToken(newToken);
+  const login = async (u: string, password: string) => {
+    const data = await apiLogin(u, password);
+    setIsAuthenticated(true);
+    setUsername(data.username);
   };
 
-  const logout = () => {
-    localStorage.removeItem('admin_token');
-    setToken(null);
+  const logout = async () => {
+    await apiLogout().catch(() => {});
+    setIsAuthenticated(false);
+    setUsername(null);
   };
 
   return (
-    <AuthContext.Provider value={{ token, isAuthenticated: token !== null, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, loading, username, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

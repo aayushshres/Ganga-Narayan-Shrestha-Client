@@ -21,7 +21,7 @@ const labelStyle = {
 };
 
 export default function BooksPage() {
-  const { token } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitSuccess, setSubmitSuccess] = useState("");
@@ -49,14 +49,14 @@ export default function BooksPage() {
   }, []);
 
   const handleAdd = async () => {
-    if (!token || !titleNp || !typeEn || !yearBs) return;
+    if (!isAuthenticated || !titleNp || !typeEn || !yearBs) return;
     setSubmitError("");
     setSubmitSuccess("");
     setIsSubmitting(true);
 
     const data: BookFormData = { titleNp, typeEn, yearBs, order: 0 };
     try {
-      await createBook(data, token);
+      await createBook(data);
       setSubmitSuccess("पुस्तक सफलतापूर्वक थपियो!");
       setTitleNp("");
       setTypeEn("Poetry Collection");
@@ -71,10 +71,9 @@ export default function BooksPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!token) return;
     if (!window.confirm("यो पुस्तक मेट्ने?")) return;
     try {
-      await deleteBook(id, token);
+      await deleteBook(id);
       setBooks(books.filter((b) => b._id !== id));
     } catch (err: unknown) {
       alert((err as Error).message || "Unknown error");
@@ -92,10 +91,10 @@ export default function BooksPage() {
   };
 
   const handleSave = async () => {
-    if (!token || !editId) return;
+    if (!editId) return;
     setIsSaving(true);
     try {
-      const updated = await updateBook(editId, editData, token);
+      const updated = await updateBook(editId, editData);
       setBooks(books.map((b) => (b._id === editId ? updated : b)));
       setEditId(null);
     } catch (err: unknown) {
