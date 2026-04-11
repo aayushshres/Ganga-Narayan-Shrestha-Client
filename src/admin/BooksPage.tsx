@@ -167,6 +167,7 @@ export default function BooksPage() {
             style={inputStyle}
             value={titleNp}
             onChange={(e) => setTitleNp(e.target.value)}
+            placeholder="e.g. मेरो यात्रा"
           />
         </div>
         <div style={{ gridColumn: "1 / -1" }}>
@@ -317,6 +318,7 @@ export default function BooksPage() {
                               titleNp: e.target.value,
                             })
                           }
+                          placeholder="e.g. मेरो यात्रा"
                         />
                       </div>
                       <div style={{ gridColumn: "1 / -1" }}>
@@ -328,6 +330,7 @@ export default function BooksPage() {
                           onChange={(e) =>
                             setEditData({ ...editData, typeEn: e.target.value })
                           }
+                          placeholder="e.g. Poetry Collection"
                         />
                       </div>
                       <div style={{ gridColumn: "1 / -1" }}>
@@ -339,6 +342,7 @@ export default function BooksPage() {
                           onChange={(e) =>
                             setEditData({ ...editData, yearBs: e.target.value })
                           }
+                          placeholder="e.g. २०८०"
                         />
                       </div>
                       <div style={{ gridColumn: "1 / -1" }}>

@@ -118,6 +118,7 @@ export default function InterviewsPage() {
             style={inputStyle}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            placeholder="e.g. राजनीतिक परिस्थितिबारे अन्तर्वार्ता"
           />
         </div>
         <div style={{ gridColumn: "1 / -1" }}>
@@ -245,6 +246,7 @@ export default function InterviewsPage() {
                           onChange={(e) =>
                             setEditData({ ...editData, title: e.target.value })
                           }
+                          placeholder="e.g. राजनीतिक परिस्थितिबारे अन्तर्वार्ता"
                         />
                       </div>
                       <div style={{ gridColumn: "1 / -1" }}>
@@ -259,6 +261,7 @@ export default function InterviewsPage() {
                               channel: e.target.value,
                             })
                           }
+                          placeholder="e.g. Himalaya TV"
                         />
                       </div>
                       <div style={{ gridColumn: "1 / -1" }}>
@@ -273,6 +276,7 @@ export default function InterviewsPage() {
                               youtubeId: e.target.value,
                             })
                           }
+                          placeholder="e.g. dQw4w9WgXcQ"
                         />
                       </div>
                       <div

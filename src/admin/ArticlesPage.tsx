@@ -134,6 +134,7 @@ export default function ArticlesPage() {
             style={inputStyle}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            placeholder="e.g. नेपालको राजनीतिक परिवर्तन"
           />
         </div>
 
@@ -157,6 +158,7 @@ export default function ArticlesPage() {
             style={{ ...inputStyle, height: "80px", resize: "vertical" }}
             value={excerpt}
             onChange={(e) => setExcerpt(e.target.value)}
+            placeholder="लेखको छोटो सारांश..."
           />
         </div>
 
@@ -281,6 +283,7 @@ export default function ArticlesPage() {
                           style={inputStyle}
                           value={editTitle}
                           onChange={(e) => setEditTitle(e.target.value)}
+                          placeholder="e.g. नेपालको राजनीतिक परिवर्तन"
                         />
                       </div>
                       <div>
@@ -308,6 +311,7 @@ export default function ArticlesPage() {
                           }}
                           value={editExcerpt}
                           onChange={(e) => setEditExcerpt(e.target.value)}
+                          placeholder="लेखको छोटो सारांश..."
                         />
                       </div>
                       <div style={{ gridColumn: "1 / -1" }}>

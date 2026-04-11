@@ -106,6 +106,7 @@ export default function SongsPage() {
             style={inputStyle}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            placeholder="e.g. मेरो देश नेपाल"
           />
         </div>
         <div style={{ gridColumn: "1 / -1" }}>
@@ -215,6 +216,7 @@ export default function SongsPage() {
                           onChange={(e) =>
                             setEditData({ ...editData, title: e.target.value })
                           }
+                          placeholder="e.g. मेरो देश नेपाल"
                         />
                       </div>
                       <div style={{ gridColumn: "1 / -1" }}>
@@ -229,6 +231,7 @@ export default function SongsPage() {
                               youtubeId: e.target.value,
                             })
                           }
+                          placeholder="e.g. dQw4w9WgXcQ"
                         />
                       </div>
                       <div
