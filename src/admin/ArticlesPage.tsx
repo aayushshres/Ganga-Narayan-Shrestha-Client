@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useAuth } from "../context/AuthContext";
-import RichTextEditor from "./RichTextEditor";
+
+const RichTextEditor = lazy(() => import("./RichTextEditor"));
 import {
   fetchArticles,
   fetchArticle,
@@ -161,7 +162,9 @@ export default function ArticlesPage() {
 
         <div style={{ gridColumn: "1 / -1" }}>
           <label style={labelStyle}>सामग्री</label>
-          <RichTextEditor content={content} onChange={setContent} />
+          <Suspense fallback={<div style={{ padding: "1rem", border: "1px solid var(--border-color)", borderRadius: "6px" }}>लोड हुँदैछ...</div>}>
+            <RichTextEditor content={content} onChange={setContent} />
+          </Suspense>
         </div>
 
         <div style={{ gridColumn: "1 / -1" }}>
@@ -309,7 +312,9 @@ export default function ArticlesPage() {
                       </div>
                       <div style={{ gridColumn: "1 / -1" }}>
                         <label style={labelStyle}>सामग्री</label>
-                        <RichTextEditor content={editContent} onChange={setEditContent} />
+                        <Suspense fallback={<div style={{ padding: "1rem", border: "1px solid var(--border-color)", borderRadius: "6px" }}>लोड हुँदैछ...</div>}>
+                          <RichTextEditor content={editContent} onChange={setEditContent} />
+                        </Suspense>
                       </div>
                       <div
                         style={{
