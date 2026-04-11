@@ -45,54 +45,56 @@ export default function SongsSection() {
   }, []);
 
   return (
-    <div className="subsection reveal" ref={sectionRef}>
-      <h3 className="subsection-title">{t(songsLabel, lang)}</h3>
-      {!loading && songs.length === 0 && (
-        <p style={{ color: "var(--text-muted)", padding: "1rem 0" }}>
-          {lang === "np" ? "हाल कुनै गीत उपलब्ध छैन।" : "No songs available yet."}
-        </p>
-      )}
-      <HorizontalScroll className="row-wrapper">
-        {loading
-          ? Array.from({ length: SKELETON_COUNT }).map((_, i) => <SongSkeleton key={i} />)
-          : songs.map((entry) => {
-              const vid = extractYouTubeId(entry.youtubeId);
-              const thumbUrl = `https://img.youtube.com/vi/${vid}/hqdefault.jpg`;
-              const thumbFallback = `https://img.youtube.com/vi/${vid}/mqdefault.jpg`;
-              return (
-                <div key={entry._id} className="media-card horizontal-card">
-                  <button
-                    className="media-card__thumb-btn"
-                    onClick={() => setActiveVideo(vid)}
-                    aria-label={`Play: ${entry.title}`}
-                  >
-                    <img
-                      draggable={false}
-                      className="media-card__thumb"
-                      src={thumbUrl}
-                      alt={entry.title}
-                      loading="lazy"
-                      onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).src = thumbFallback;
-                      }}
-                    />
-                    <span className="media-card__play" aria-hidden="true">▶</span>
-                  </button>
-                  <div className="media-card__body">
-                    <h4 className="media-card__title">{entry.title}</h4>
+    <>
+      <div className="subsection reveal" ref={sectionRef}>
+        <h3 className="subsection-title">{t(songsLabel, lang)}</h3>
+        {!loading && songs.length === 0 && (
+          <p style={{ color: "var(--text-muted)", padding: "1rem 0" }}>
+            {lang === "np" ? "हाल कुनै गीत उपलब्ध छैन।" : "No songs available yet."}
+          </p>
+        )}
+        <HorizontalScroll className="row-wrapper">
+          {loading
+            ? Array.from({ length: SKELETON_COUNT }).map((_, i) => <SongSkeleton key={i} />)
+            : songs.map((entry) => {
+                const vid = extractYouTubeId(entry.youtubeId);
+                const thumbUrl = `https://img.youtube.com/vi/${vid}/hqdefault.jpg`;
+                const thumbFallback = `https://img.youtube.com/vi/${vid}/mqdefault.jpg`;
+                return (
+                  <div key={entry._id} className="media-card horizontal-card">
+                    <button
+                      className="media-card__thumb-btn"
+                      onClick={() => setActiveVideo(vid)}
+                      aria-label={`Play: ${entry.title}`}
+                    >
+                      <img
+                        draggable={false}
+                        className="media-card__thumb"
+                        src={thumbUrl}
+                        alt={entry.title}
+                        loading="lazy"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).src = thumbFallback;
+                        }}
+                      />
+                      <span className="media-card__play" aria-hidden="true">▶</span>
+                    </button>
+                    <div className="media-card__body">
+                      <h4 className="media-card__title">{entry.title}</h4>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-      </HorizontalScroll>
-      <div className="row-footer">
-        <Link to="/all-songs" className="row-link">
-          {t(viewAllSongs, lang)}
-        </Link>
+                );
+              })}
+        </HorizontalScroll>
+        <div className="row-footer">
+          <Link to="/all-songs" className="row-link">
+            {t(viewAllSongs, lang)}
+          </Link>
+        </div>
       </div>
       {activeVideo && (
         <YouTubeModal youtubeId={activeVideo} onClose={() => setActiveVideo(null)} />
       )}
-    </div>
+    </>
   );
 }
