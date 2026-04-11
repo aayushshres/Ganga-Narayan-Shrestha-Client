@@ -74,12 +74,12 @@ export default function Navbar() {
 
       <div className="nav-controls">
         <button
-          className="toggle-btn"
+          className="toggle-btn theme-toggle"
           id="langToggle"
           aria-label="Toggle language"
           onClick={toggleLang}
         >
-          {lang === "np" ? "en" : "np"}
+          {lang === "np" ? "🇬🇧" : "🇳🇵"}
         </button>
 
         <button
