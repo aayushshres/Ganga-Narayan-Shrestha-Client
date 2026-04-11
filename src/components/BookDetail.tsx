@@ -2,8 +2,12 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
 import { fetchBook } from "../api/index";
+import { usePageMeta } from "../hooks/usePageMeta";
+import type { PageMeta } from "../hooks/usePageMeta";
 import type { Book } from "../types";
 import BookCover from "./BookCover";
+
+const API_URL = import.meta.env.VITE_API_URL as string;
 
 export default function BookDetail() {
   const { id } = useParams<{ id: string }>();
@@ -13,11 +17,13 @@ export default function BookDetail() {
   const [book, setBook] = useState<Book | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [pageMeta, setPageMeta] = useState<PageMeta | null>(null);
 
   useEffect(() => {
     if (!id) return;
     setLoading(true);
     setNotFound(false);
+    setPageMeta(null);
     fetchBook(id)
       .then((data) => {
         setBook(data);
@@ -29,6 +35,16 @@ export default function BookDetail() {
       document.title = "गंगानारायण श्रेष्ठ — Ganga Narayan Shrestha";
     };
   }, [id]);
+
+  useEffect(() => {
+    if (!id || !book) return;
+    fetch(`${API_URL}/meta/book/${id}`)
+      .then((r) => r.json())
+      .then((data: PageMeta) => setPageMeta(data))
+      .catch(() => { /* non-critical */ });
+  }, [id, book]);
+
+  usePageMeta(pageMeta);
 
   if (loading) {
     return (

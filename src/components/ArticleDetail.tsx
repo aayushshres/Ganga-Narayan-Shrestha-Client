@@ -4,10 +4,13 @@ import { useAppContext } from "../context/AppContext";
 import { fetchArticle } from "../api/index";
 import { formatPostDate } from "../utils/formatDate";
 import { categoryColorMap, categoryLabelMap } from "../utils/article";
+import { usePageMeta } from "../hooks/usePageMeta";
+import type { PageMeta } from "../hooks/usePageMeta";
 import DOMPurify from "dompurify";
 import type { Article } from "../types";
 
 const SITE_TITLE = "गंगानारायण श्रेष्ठ — Ganga Narayan Shrestha";
+const API_URL = import.meta.env.VITE_API_URL as string;
 
 export default function ArticleDetail() {
   const { id } = useParams<{ id: string }>();
@@ -18,11 +21,13 @@ export default function ArticleDetail() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [shareFeedback, setShareFeedback] = useState(false);
+  const [pageMeta, setPageMeta] = useState<PageMeta | null>(null);
 
   useEffect(() => {
     if (!id) return;
     setLoading(true);
     setNotFound(false);
+    setPageMeta(null);
     fetchArticle(id)
       .then((data) => {
         setArticle(data);
@@ -34,6 +39,16 @@ export default function ArticleDetail() {
       document.title = SITE_TITLE;
     };
   }, [id]);
+
+  useEffect(() => {
+    if (!id || !article) return;
+    fetch(`${API_URL}/meta/article/${id}`)
+      .then((r) => r.json())
+      .then((data: PageMeta) => setPageMeta(data))
+      .catch(() => { /* non-critical — OG tags just won't be injected */ });
+  }, [id, article]);
+
+  usePageMeta(pageMeta);
 
   if (loading) {
     return (
