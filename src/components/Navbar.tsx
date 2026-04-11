@@ -3,14 +3,17 @@ import { useAppContext } from "../context/AppContext";
 import { t } from "../types";
 import type { Translatable } from "../types";
 
-const brand: Translatable = { en: "GANGA NARAYAN SHRESTHA", np: "गंगानारायण श्रेष्ठ" };
+const brand: Translatable = {
+  en: "GANGA NARAYAN SHRESTHA",
+  np: "गंगानारायण श्रेष्ठ",
+};
 
 const navItems: { href: string; label: Translatable }[] = [
-  { href: "#hero",       label: { en: "Home",       np: "गृहपृष्ठ" } },
-  { href: "#timeline",   label: { en: "Biography",  np: "जीवनी" } },
-  { href: "#writings",   label: { en: "Writings",   np: "लेखनहरू" } },
+  { href: "#hero", label: { en: "Home", np: "गृहपृष्ठ" } },
+  { href: "#timeline", label: { en: "Biography", np: "जीवनी" } },
+  { href: "#writings", label: { en: "Writings", np: "लेखनहरू" } },
   { href: "#interviews", label: { en: "Interviews", np: "अन्तर्वार्ताहरू" } },
-  { href: "#contact",    label: { en: "Contact",    np: "सम्पर्क" } },
+  { href: "#contact", label: { en: "Contact", np: "सम्पर्क" } },
 ];
 
 export default function Navbar() {
@@ -21,13 +24,13 @@ export default function Navbar() {
   useEffect(() => {
     if (!menuOpen) return;
     const handler = (e: MouseEvent) => {
-      const navbar = document.getElementById('navbar');
+      const navbar = document.getElementById("navbar");
       if (navbar && !navbar.contains(e.target as Node)) {
         setMenuOpen(false);
       }
     };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
   }, [menuOpen]);
 
   // Navbar scroll shadow
@@ -35,7 +38,8 @@ export default function Navbar() {
     const navbar = document.getElementById("navbar");
     const onScroll = () => {
       if (!navbar) return;
-      navbar.style.boxShadow = window.pageYOffset > 100 ? "var(--shadow)" : "none";
+      navbar.style.boxShadow =
+        window.pageYOffset > 100 ? "var(--shadow)" : "none";
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -59,7 +63,7 @@ export default function Navbar() {
                 e.preventDefault();
                 setMenuOpen(false);
                 const el = document.querySelector(item.href);
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
+                if (el) el.scrollIntoView({ behavior: "smooth" });
               }}
             >
               {t(item.label, lang)}
@@ -75,7 +79,7 @@ export default function Navbar() {
           aria-label="Toggle language"
           onClick={toggleLang}
         >
-          {lang === "np" ? "🇬🇧" : "🇳🇵"}
+          {lang === "np" ? "en" : "np"}
         </button>
 
         <button
