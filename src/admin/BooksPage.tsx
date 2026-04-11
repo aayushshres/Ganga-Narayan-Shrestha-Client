@@ -24,7 +24,7 @@ export default function BooksPage() {
   const [isUploading, setIsUploading] = useState(false);
 
   const [titleNp, setTitleNp] = useState("");
-  const [typeEn, setTypeEn] = useState("Poetry Collection");
+  const [typeEn, setTypeEn] = useState("");
   const [yearBs, setYearBs] = useState("");
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
@@ -84,7 +84,7 @@ export default function BooksPage() {
       await createBook(data);
       setSubmitSuccess("पुस्तक सफलतापूर्वक थपियो!");
       setTitleNp("");
-      setTypeEn("Poetry Collection");
+      setTypeEn("");
       setYearBs("");
       setCoverFile(null);
       setCoverPreview(null);
@@ -198,15 +198,23 @@ export default function BooksPage() {
             style={{ ...inputStyle, cursor: "pointer" }}
           />
           {coverPreview && (
-            <img src={coverPreview} alt="Cover preview" style={coverPreviewStyle} />
+            <img
+              src={coverPreview}
+              alt="Cover preview"
+              style={coverPreviewStyle}
+            />
           )}
         </div>
         <div style={{ gridColumn: "1 / -1" }}>
           {submitSuccess && (
-            <p style={{ color: "green", marginBottom: "1rem" }}>{submitSuccess}</p>
+            <p style={{ color: "green", marginBottom: "1rem" }}>
+              {submitSuccess}
+            </p>
           )}
           {submitError && (
-            <p style={{ color: "#D32F2F", marginBottom: "1rem" }}>{submitError}</p>
+            <p style={{ color: "#D32F2F", marginBottom: "1rem" }}>
+              {submitError}
+            </p>
           )}
           <button
             onClick={handleAdd}
@@ -222,7 +230,11 @@ export default function BooksPage() {
               fontSize: "1.1rem",
             }}
           >
-            {isUploading ? "अपलोड हुँदैछ..." : isSubmitting ? "थप्दैछ..." : "पोस्ट गर्नुहोस्"}
+            {isUploading
+              ? "अपलोड हुँदैछ..."
+              : isSubmitting
+                ? "थप्दैछ..."
+                : "पोस्ट गर्नुहोस्"}
           </button>
         </div>
       </div>
@@ -244,15 +256,33 @@ export default function BooksPage() {
             overflow: "hidden",
           }}
         >
-          <thead style={{ background: "var(--bg-secondary)", textAlign: "left" }}>
+          <thead
+            style={{ background: "var(--bg-secondary)", textAlign: "left" }}
+          >
             <tr>
-              <th style={{ padding: "1rem", borderBottom: "1px solid var(--border-color)" }}>
+              <th
+                style={{
+                  padding: "1rem",
+                  borderBottom: "1px solid var(--border-color)",
+                }}
+              >
                 शीर्षक
               </th>
-              <th style={{ padding: "1rem", borderBottom: "1px solid var(--border-color)" }}>
+              <th
+                style={{
+                  padding: "1rem",
+                  borderBottom: "1px solid var(--border-color)",
+                }}
+              >
                 प्रकार
               </th>
-              <th style={{ padding: "1rem", borderBottom: "1px solid var(--border-color)", textAlign: "right" }}>
+              <th
+                style={{
+                  padding: "1rem",
+                  borderBottom: "1px solid var(--border-color)",
+                  textAlign: "right",
+                }}
+              >
                 कार्यहरू
               </th>
             </tr>
@@ -263,16 +293,30 @@ export default function BooksPage() {
                 <tr key={b._id}>
                   <td
                     colSpan={3}
-                    style={{ padding: "1rem", borderBottom: "1px solid var(--border-light)" }}
+                    style={{
+                      padding: "1rem",
+                      borderBottom: "1px solid var(--border-light)",
+                    }}
                   >
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: "1rem",
+                      }}
+                    >
                       <div style={{ gridColumn: "1 / -1" }}>
                         <label style={labelStyle}>शीर्षक</label>
                         <input
                           type="text"
                           style={inputStyle}
                           value={editData.titleNp ?? ""}
-                          onChange={(e) => setEditData({ ...editData, titleNp: e.target.value })}
+                          onChange={(e) =>
+                            setEditData({
+                              ...editData,
+                              titleNp: e.target.value,
+                            })
+                          }
                         />
                       </div>
                       <div style={{ gridColumn: "1 / -1" }}>
@@ -281,7 +325,9 @@ export default function BooksPage() {
                           type="text"
                           style={inputStyle}
                           value={editData.typeEn ?? ""}
-                          onChange={(e) => setEditData({ ...editData, typeEn: e.target.value })}
+                          onChange={(e) =>
+                            setEditData({ ...editData, typeEn: e.target.value })
+                          }
                         />
                       </div>
                       <div style={{ gridColumn: "1 / -1" }}>
@@ -290,7 +336,9 @@ export default function BooksPage() {
                           type="text"
                           style={inputStyle}
                           value={editData.yearBs ?? ""}
-                          onChange={(e) => setEditData({ ...editData, yearBs: e.target.value })}
+                          onChange={(e) =>
+                            setEditData({ ...editData, yearBs: e.target.value })
+                          }
                         />
                       </div>
                       <div style={{ gridColumn: "1 / -1" }}>
@@ -302,10 +350,20 @@ export default function BooksPage() {
                           style={{ ...inputStyle, cursor: "pointer" }}
                         />
                         {editCoverPreview && (
-                          <img src={editCoverPreview} alt="Cover preview" style={coverPreviewStyle} />
+                          <img
+                            src={editCoverPreview}
+                            alt="Cover preview"
+                            style={coverPreviewStyle}
+                          />
                         )}
                       </div>
-                      <div style={{ gridColumn: "1 / -1", display: "flex", gap: "0.5rem" }}>
+                      <div
+                        style={{
+                          gridColumn: "1 / -1",
+                          display: "flex",
+                          gap: "0.5rem",
+                        }}
+                      >
                         <button
                           onClick={handleSave}
                           disabled={isSaving}
@@ -352,7 +410,12 @@ export default function BooksPage() {
                   >
                     {b.titleNp}
                   </td>
-                  <td style={{ padding: "1rem", borderBottom: "1px solid var(--border-light)" }}>
+                  <td
+                    style={{
+                      padding: "1rem",
+                      borderBottom: "1px solid var(--border-light)",
+                    }}
+                  >
                     {b.typeEn}
                   </td>
                   <td
@@ -399,7 +462,10 @@ export default function BooksPage() {
             )}
             {books.length === 0 && (
               <tr>
-                <td colSpan={3} style={{ padding: "2rem", textAlign: "center" }}>
+                <td
+                  colSpan={3}
+                  style={{ padding: "2rem", textAlign: "center" }}
+                >
                   कुनै पुस्तक भेटिएन।
                 </td>
               </tr>

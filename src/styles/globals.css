@@ -1389,6 +1389,70 @@ body.lang-np .media-card__meta {
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
 }
 
+/* ========================================
+   ARTICLE DETAIL BODY
+   ======================================== */
+.detail-page__body h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 3vw, 2rem);
+  font-weight: 700;
+  margin: 1.5rem 0 0.75rem;
+  color: var(--text-primary);
+}
+
+.detail-page__body h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.3rem, 2.5vw, 1.6rem);
+  font-weight: 700;
+  margin: 1.5rem 0 0.75rem;
+  color: var(--text-primary);
+}
+
+.detail-page__body h3 {
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem, 2vw, 1.3rem);
+  font-weight: 700;
+  margin: 1.25rem 0 0.5rem;
+  color: var(--text-primary);
+}
+
+.detail-page__body p {
+  margin-bottom: 1rem;
+  line-height: 1.8;
+}
+
+.detail-page__body ul {
+  padding-left: 1.75rem;
+  margin-bottom: 1rem;
+}
+
+.detail-page__body li {
+  margin-bottom: 0.35rem;
+  line-height: 1.7;
+}
+
+.detail-page__body a {
+  color: var(--crimson);
+  text-decoration: underline;
+  transition: opacity 0.2s;
+}
+
+.detail-page__body a:hover {
+  opacity: 0.75;
+}
+
+.detail-page__body strong {
+  font-weight: 700;
+}
+
+.detail-page__body em {
+  font-style: italic;
+}
+
+.detail-page__body u {
+  text-decoration: underline;
+}
+
 .yt-modal__iframe {
   position: absolute;
   top: 0;

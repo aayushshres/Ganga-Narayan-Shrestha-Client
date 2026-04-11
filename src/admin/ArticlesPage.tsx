@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import RichTextEditor from "./RichTextEditor";
 import {
   fetchArticles,
   fetchArticle,
@@ -160,11 +161,7 @@ export default function ArticlesPage() {
 
         <div style={{ gridColumn: "1 / -1" }}>
           <label style={labelStyle}>सामग्री</label>
-          <textarea
-            style={{ ...inputStyle, height: "200px", resize: "vertical" }}
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-          />
+          <RichTextEditor content={content} onChange={setContent} />
         </div>
 
         <div style={{ gridColumn: "1 / -1" }}>
@@ -312,15 +309,7 @@ export default function ArticlesPage() {
                       </div>
                       <div style={{ gridColumn: "1 / -1" }}>
                         <label style={labelStyle}>सामग्री</label>
-                        <textarea
-                          style={{
-                            ...inputStyle,
-                            height: "120px",
-                            resize: "vertical",
-                          }}
-                          value={editContent}
-                          onChange={(e) => setEditContent(e.target.value)}
-                        />
+                        <RichTextEditor content={editContent} onChange={setEditContent} />
                       </div>
                       <div
                         style={{
