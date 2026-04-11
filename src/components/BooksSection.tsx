@@ -57,7 +57,7 @@ export default function BooksSection() {
                   draggable={false}
                 >
                   <div className="book-card__cover">
-                    <BookCover titleNp={entry.titleNp} theme={theme} />
+                    <BookCover titleNp={entry.titleNp} theme={theme} coverImage={entry.coverImage} />
                   </div>
                   <h4 className="book-card__title">{entry.titleNp}</h4>
                   <p className="book-card__type">{entry.typeEn}</p>

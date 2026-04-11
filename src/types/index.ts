@@ -45,6 +45,7 @@ export interface Book {
   typeEn: string;
   yearBs: string;
   order: number;
+  coverImage?: string;
 }
 
 export interface Interview {

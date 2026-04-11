@@ -3,6 +3,16 @@ import { useAuth } from "../context/AuthContext";
 import { fetchBooks, createBook, updateBook, deleteBook } from "../api/index";
 import type { Book, BookFormData } from "../types";
 import { inputStyle, labelStyle } from "../styles/admin";
+import { uploadToImgbb } from "../lib/imgbb";
+
+const coverPreviewStyle: React.CSSProperties = {
+  width: "100px",
+  height: "140px",
+  objectFit: "cover",
+  borderRadius: "4px",
+  border: "1px solid var(--border-color)",
+  marginTop: "0.75rem",
+};
 
 export default function BooksPage() {
   const { isAuthenticated } = useAuth();
@@ -11,14 +21,19 @@ export default function BooksPage() {
   const [submitSuccess, setSubmitSuccess] = useState("");
   const [submitError, setSubmitError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const [titleNp, setTitleNp] = useState("");
   const [typeEn, setTypeEn] = useState("Poetry Collection");
   const [yearBs, setYearBs] = useState("");
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
 
   const [editId, setEditId] = useState<string | null>(null);
   const [editData, setEditData] = useState<Partial<BookFormData>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [editCoverFile, setEditCoverFile] = useState<File | null>(null);
+  const [editCoverPreview, setEditCoverPreview] = useState<string | null>(null);
 
   const loadBooks = () => {
     setLoading(true);
@@ -32,22 +47,51 @@ export default function BooksPage() {
     loadBooks();
   }, []);
 
+  const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    setCoverFile(file);
+    setCoverPreview(file ? URL.createObjectURL(file) : null);
+  };
+
+  const handleEditCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    setEditCoverFile(file);
+    setEditCoverPreview(file ? URL.createObjectURL(file) : null);
+  };
+
   const handleAdd = async () => {
     if (!isAuthenticated || !titleNp || !typeEn || !yearBs) return;
     setSubmitError("");
     setSubmitSuccess("");
     setIsSubmitting(true);
 
-    const data: BookFormData = { titleNp, typeEn, yearBs, order: 0 };
     try {
+      let coverImage: string | undefined;
+      if (coverFile) {
+        setIsUploading(true);
+        coverImage = await uploadToImgbb(coverFile);
+        setIsUploading(false);
+      }
+
+      const data: BookFormData = {
+        titleNp,
+        typeEn,
+        yearBs,
+        order: 0,
+        ...(coverImage ? { coverImage } : {}),
+      };
+
       await createBook(data);
       setSubmitSuccess("पुस्तक सफलतापूर्वक थपियो!");
       setTitleNp("");
       setTypeEn("Poetry Collection");
       setYearBs("");
+      setCoverFile(null);
+      setCoverPreview(null);
       loadBooks();
       setTimeout(() => setSubmitSuccess(""), 3000);
     } catch (err: unknown) {
+      setIsUploading(false);
       setSubmitError((err as Error).message || "Unknown error");
     } finally {
       setIsSubmitting(false);
@@ -71,16 +115,26 @@ export default function BooksPage() {
       typeEn: b.typeEn,
       yearBs: b.yearBs,
       order: b.order,
+      coverImage: b.coverImage,
     });
+    setEditCoverFile(null);
+    setEditCoverPreview(b.coverImage ?? null);
   };
 
   const handleSave = async () => {
     if (!editId) return;
     setIsSaving(true);
     try {
-      const updated = await updateBook(editId, editData);
+      let updatedData = { ...editData };
+      if (editCoverFile) {
+        const coverImage = await uploadToImgbb(editCoverFile);
+        updatedData = { ...updatedData, coverImage };
+      }
+      const updated = await updateBook(editId, updatedData);
       setBooks(books.map((b) => (b._id === editId ? updated : b)));
       setEditId(null);
+      setEditCoverFile(null);
+      setEditCoverPreview(null);
     } catch (err: unknown) {
       alert((err as Error).message || "Unknown error");
     } finally {
@@ -136,31 +190,39 @@ export default function BooksPage() {
           />
         </div>
         <div style={{ gridColumn: "1 / -1" }}>
+          <label style={labelStyle}>पुस्तक कभर (ऐच्छिक)</label>
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={handleCoverChange}
+            style={{ ...inputStyle, cursor: "pointer" }}
+          />
+          {coverPreview && (
+            <img src={coverPreview} alt="Cover preview" style={coverPreviewStyle} />
+          )}
+        </div>
+        <div style={{ gridColumn: "1 / -1" }}>
           {submitSuccess && (
-            <p style={{ color: "green", marginBottom: "1rem" }}>
-              {submitSuccess}
-            </p>
+            <p style={{ color: "green", marginBottom: "1rem" }}>{submitSuccess}</p>
           )}
           {submitError && (
-            <p style={{ color: "#D32F2F", marginBottom: "1rem" }}>
-              {submitError}
-            </p>
+            <p style={{ color: "#D32F2F", marginBottom: "1rem" }}>{submitError}</p>
           )}
           <button
             onClick={handleAdd}
-            disabled={isSubmitting}
+            disabled={isSubmitting || isUploading}
             style={{
               background: "var(--crimson)",
               color: "white",
               border: "none",
               padding: "0.75rem 2rem",
               borderRadius: "4px",
-              cursor: isSubmitting ? "not-allowed" : "pointer",
+              cursor: isSubmitting || isUploading ? "not-allowed" : "pointer",
               fontFamily: "var(--font-display)",
               fontSize: "1.1rem",
             }}
           >
-            {isSubmitting ? "थप्दैछ..." : "पोस्ट गर्नुहोस्"}
+            {isUploading ? "अपलोड हुँदैछ..." : isSubmitting ? "थप्दैछ..." : "पोस्ट गर्नुहोस्"}
           </button>
         </div>
       </div>
@@ -182,33 +244,15 @@ export default function BooksPage() {
             overflow: "hidden",
           }}
         >
-          <thead
-            style={{ background: "var(--bg-secondary)", textAlign: "left" }}
-          >
+          <thead style={{ background: "var(--bg-secondary)", textAlign: "left" }}>
             <tr>
-              <th
-                style={{
-                  padding: "1rem",
-                  borderBottom: "1px solid var(--border-color)",
-                }}
-              >
+              <th style={{ padding: "1rem", borderBottom: "1px solid var(--border-color)" }}>
                 शीर्षक
               </th>
-              <th
-                style={{
-                  padding: "1rem",
-                  borderBottom: "1px solid var(--border-color)",
-                }}
-              >
+              <th style={{ padding: "1rem", borderBottom: "1px solid var(--border-color)" }}>
                 प्रकार
               </th>
-              <th
-                style={{
-                  padding: "1rem",
-                  borderBottom: "1px solid var(--border-color)",
-                  textAlign: "right",
-                }}
-              >
+              <th style={{ padding: "1rem", borderBottom: "1px solid var(--border-color)", textAlign: "right" }}>
                 कार्यहरू
               </th>
             </tr>
@@ -219,30 +263,16 @@ export default function BooksPage() {
                 <tr key={b._id}>
                   <td
                     colSpan={3}
-                    style={{
-                      padding: "1rem",
-                      borderBottom: "1px solid var(--border-light)",
-                    }}
+                    style={{ padding: "1rem", borderBottom: "1px solid var(--border-light)" }}
                   >
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr 1fr",
-                        gap: "1rem",
-                      }}
-                    >
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
                       <div style={{ gridColumn: "1 / -1" }}>
                         <label style={labelStyle}>शीर्षक</label>
                         <input
                           type="text"
                           style={inputStyle}
                           value={editData.titleNp ?? ""}
-                          onChange={(e) =>
-                            setEditData({
-                              ...editData,
-                              titleNp: e.target.value,
-                            })
-                          }
+                          onChange={(e) => setEditData({ ...editData, titleNp: e.target.value })}
                         />
                       </div>
                       <div style={{ gridColumn: "1 / -1" }}>
@@ -251,9 +281,7 @@ export default function BooksPage() {
                           type="text"
                           style={inputStyle}
                           value={editData.typeEn ?? ""}
-                          onChange={(e) =>
-                            setEditData({ ...editData, typeEn: e.target.value })
-                          }
+                          onChange={(e) => setEditData({ ...editData, typeEn: e.target.value })}
                         />
                       </div>
                       <div style={{ gridColumn: "1 / -1" }}>
@@ -262,18 +290,22 @@ export default function BooksPage() {
                           type="text"
                           style={inputStyle}
                           value={editData.yearBs ?? ""}
-                          onChange={(e) =>
-                            setEditData({ ...editData, yearBs: e.target.value })
-                          }
+                          onChange={(e) => setEditData({ ...editData, yearBs: e.target.value })}
                         />
                       </div>
-                      <div
-                        style={{
-                          gridColumn: "1 / -1",
-                          display: "flex",
-                          gap: "0.5rem",
-                        }}
-                      >
+                      <div style={{ gridColumn: "1 / -1" }}>
+                        <label style={labelStyle}>पुस्तक कभर (ऐच्छिक)</label>
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp"
+                          onChange={handleEditCoverChange}
+                          style={{ ...inputStyle, cursor: "pointer" }}
+                        />
+                        {editCoverPreview && (
+                          <img src={editCoverPreview} alt="Cover preview" style={coverPreviewStyle} />
+                        )}
+                      </div>
+                      <div style={{ gridColumn: "1 / -1", display: "flex", gap: "0.5rem" }}>
                         <button
                           onClick={handleSave}
                           disabled={isSaving}
@@ -289,7 +321,11 @@ export default function BooksPage() {
                           {isSaving ? "..." : "सुरक्षित गर्नुहोस्"}
                         </button>
                         <button
-                          onClick={() => setEditId(null)}
+                          onClick={() => {
+                            setEditId(null);
+                            setEditCoverFile(null);
+                            setEditCoverPreview(null);
+                          }}
                           style={{
                             padding: "0.5rem 1.2rem",
                             background: "var(--bg-secondary)",
@@ -316,12 +352,7 @@ export default function BooksPage() {
                   >
                     {b.titleNp}
                   </td>
-                  <td
-                    style={{
-                      padding: "1rem",
-                      borderBottom: "1px solid var(--border-light)",
-                    }}
-                  >
+                  <td style={{ padding: "1rem", borderBottom: "1px solid var(--border-light)" }}>
                     {b.typeEn}
                   </td>
                   <td
@@ -368,10 +399,7 @@ export default function BooksPage() {
             )}
             {books.length === 0 && (
               <tr>
-                <td
-                  colSpan={3}
-                  style={{ padding: "2rem", textAlign: "center" }}
-                >
+                <td colSpan={3} style={{ padding: "2rem", textAlign: "center" }}>
                   कुनै पुस्तक भेटिएन।
                 </td>
               </tr>

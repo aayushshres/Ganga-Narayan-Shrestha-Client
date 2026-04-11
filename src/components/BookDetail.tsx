@@ -3,10 +3,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
 import { fetchBook } from "../api/index";
 import type { Book } from "../types";
+import BookCover from "./BookCover";
 
 export default function BookDetail() {
   const { id } = useParams<{ id: string }>();
-  const { lang } = useAppContext();
+  const { lang, theme } = useAppContext();
   const navigate = useNavigate();
 
   const [book, setBook] = useState<Book | null>(null);
@@ -51,14 +52,16 @@ export default function BookDetail() {
     );
   }
 
-  const yearDisplay =
-    lang === "np"
-      ? `${book.yearBs} बि.सं.`
-      : `${book.yearBs} BS`;
+  const yearDisplay = lang === "np" ? `${book.yearBs} बि.सं.` : `${book.yearBs} BS`;
 
   return (
     <div className="detail-page">
       <button onClick={() => navigate(-1)} className="detail-page__back">←</button>
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: "2rem" }}>
+        <div style={{ width: "180px", height: "260px" }}>
+          <BookCover titleNp={book.titleNp} theme={theme} coverImage={book.coverImage} />
+        </div>
+      </div>
       <h1 className="detail-page__title">{book.titleNp}</h1>
       <p className="detail-page__subtitle">{book.typeEn}</p>
       <p style={{ textAlign: "center", marginTop: "1rem", color: "var(--text-muted)" }}>

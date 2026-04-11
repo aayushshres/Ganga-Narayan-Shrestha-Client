@@ -51,7 +51,7 @@ export default function AllBooks() {
                 style={{ display: "block", textDecoration: "none" }}
               >
                 <div className="book-card__cover">
-                  <BookCover titleNp={entry.titleNp} theme={theme} />
+                  <BookCover titleNp={entry.titleNp} theme={theme} coverImage={entry.coverImage} />
                 </div>
                 <h4 className="book-card__title" style={{ marginTop: "1rem" }}>{entry.titleNp}</h4>
                 <p className="book-card__type">{entry.typeEn}</p>
