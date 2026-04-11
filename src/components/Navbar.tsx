@@ -75,11 +75,7 @@ export default function Navbar() {
           aria-label="Toggle language"
           onClick={toggleLang}
         >
-          {lang === "np" ? (
-            <>EN | <strong>नेपाली</strong></>
-          ) : (
-            <><strong>EN</strong> | नेपाली</>
-          )}
+          {lang === "np" ? "🇬🇧" : "🇳🇵"}
         </button>
 
         <button
