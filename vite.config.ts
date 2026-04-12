@@ -10,13 +10,16 @@ export default defineConfig(({ mode }) => {
   // extract just the origin to avoid double /api in proxied requests.
   const apiUrl = env.VITE_API_URL || "http://localhost:3001/api";
   const serverOrigin = (() => {
-    try { return new URL(apiUrl).origin; }
-    catch { return "http://localhost:3001"; }
+    try {
+      return new URL(apiUrl).origin;
+    } catch {
+      return "http://localhost:3001";
+    }
   })();
 
   return {
     plugins: [react()],
-    base: env.VITE_BASE_PATH || "/Ganga-Narayan-Shrestha-Client/",
+    base: env.VITE_BASE_PATH || "/",
     server: {
       proxy: {
         "/api": serverOrigin,
