@@ -5,6 +5,7 @@ import {
   createInterview,
   updateInterview,
   deleteInterview,
+  reorderInterviews,
 } from "../api/index";
 import type { Interview, InterviewFormData } from "../types";
 import { inputStyle, labelStyle } from "../styles/admin";
@@ -21,6 +22,7 @@ export default function InterviewsPage() {
   const [channel, setChannel] = useState("");
   const [youtubeId, setYoutubeId] = useState("");
 
+  const [isReordering, setIsReordering] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [editData, setEditData] = useState<Partial<InterviewFormData>>({});
   const [isSaving, setIsSaving] = useState(false);
@@ -66,6 +68,21 @@ export default function InterviewsPage() {
       setInterviews(interviews.filter((i) => i._id !== id));
     } catch (err: unknown) {
       alert((err as Error).message || "Unknown error");
+    }
+  };
+
+  const handleMove = async (index: number, direction: "up" | "down") => {
+    const swapIndex = direction === "up" ? index - 1 : index + 1;
+    const next = [...interviews];
+    [next[index], next[swapIndex]] = [next[swapIndex], next[index]];
+    setInterviews(next);
+    setIsReordering(true);
+    try {
+      await reorderInterviews(next.map((i) => i._id));
+    } catch {
+      setInterviews(interviews);
+    } finally {
+      setIsReordering(false);
     }
   };
 
@@ -220,7 +237,7 @@ export default function InterviewsPage() {
             </tr>
           </thead>
           <tbody>
-            {interviews.map((i) =>
+            {interviews.map((i, index) =>
               editId === i._id ? (
                 <tr key={i._id}>
                   <td
@@ -345,6 +362,40 @@ export default function InterviewsPage() {
                       justifyContent: "flex-end",
                     }}
                   >
+                    <button
+                      onClick={() => handleMove(index, "up")}
+                      disabled={index === 0 || isReordering || !!editId}
+                      title="माथि सार्नुहोस्"
+                      style={{
+                        padding: "0.4rem 0.6rem",
+                        background: "var(--bg-secondary)",
+                        color: "var(--text-primary)",
+                        border: "1px solid var(--border-color)",
+                        borderRadius: "4px",
+                        cursor: index === 0 || isReordering || !!editId ? "not-allowed" : "pointer",
+                        fontSize: "0.9rem",
+                        opacity: index === 0 ? 0.35 : 1,
+                      }}
+                    >
+                      ↑
+                    </button>
+                    <button
+                      onClick={() => handleMove(index, "down")}
+                      disabled={index === interviews.length - 1 || isReordering || !!editId}
+                      title="तल सार्नुहोस्"
+                      style={{
+                        padding: "0.4rem 0.6rem",
+                        background: "var(--bg-secondary)",
+                        color: "var(--text-primary)",
+                        border: "1px solid var(--border-color)",
+                        borderRadius: "4px",
+                        cursor: index === interviews.length - 1 || isReordering || !!editId ? "not-allowed" : "pointer",
+                        fontSize: "0.9rem",
+                        opacity: index === interviews.length - 1 ? 0.35 : 1,
+                      }}
+                    >
+                      ↓
+                    </button>
                     <button
                       onClick={() => startEdit(i)}
                       style={{

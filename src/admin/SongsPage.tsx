@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { fetchSongs, createSong, updateSong, deleteSong } from "../api/index";
+import { fetchSongs, createSong, updateSong, deleteSong, reorderSongs } from "../api/index";
 import type { Song, SongFormData } from "../types";
 import { inputStyle, labelStyle } from "../styles/admin";
 
@@ -15,6 +15,7 @@ export default function SongsPage() {
   const [title, setTitle] = useState("");
   const [youtubeId, setYoutubeId] = useState("");
 
+  const [isReordering, setIsReordering] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [editData, setEditData] = useState<Partial<SongFormData>>({});
   const [isSaving, setIsSaving] = useState(false);
@@ -59,6 +60,21 @@ export default function SongsPage() {
       setSongs(songs.filter((s) => s._id !== id));
     } catch (err: unknown) {
       alert((err as Error).message || "Unknown error");
+    }
+  };
+
+  const handleMove = async (index: number, direction: "up" | "down") => {
+    const swapIndex = direction === "up" ? index - 1 : index + 1;
+    const next = [...songs];
+    [next[index], next[swapIndex]] = [next[swapIndex], next[index]];
+    setSongs(next);
+    setIsReordering(true);
+    try {
+      await reorderSongs(next.map((s) => s._id));
+    } catch {
+      setSongs(songs);
+    } finally {
+      setIsReordering(false);
     }
   };
 
@@ -190,7 +206,7 @@ export default function SongsPage() {
             </tr>
           </thead>
           <tbody>
-            {songs.map((s) =>
+            {songs.map((s, index) =>
               editId === s._id ? (
                 <tr key={s._id}>
                   <td
@@ -292,6 +308,40 @@ export default function SongsPage() {
                       justifyContent: "flex-end",
                     }}
                   >
+                    <button
+                      onClick={() => handleMove(index, "up")}
+                      disabled={index === 0 || isReordering || !!editId}
+                      title="माथि सार्नुहोस्"
+                      style={{
+                        padding: "0.4rem 0.6rem",
+                        background: "var(--bg-secondary)",
+                        color: "var(--text-primary)",
+                        border: "1px solid var(--border-color)",
+                        borderRadius: "4px",
+                        cursor: index === 0 || isReordering || !!editId ? "not-allowed" : "pointer",
+                        fontSize: "0.9rem",
+                        opacity: index === 0 ? 0.35 : 1,
+                      }}
+                    >
+                      ↑
+                    </button>
+                    <button
+                      onClick={() => handleMove(index, "down")}
+                      disabled={index === songs.length - 1 || isReordering || !!editId}
+                      title="तल सार्नुहोस्"
+                      style={{
+                        padding: "0.4rem 0.6rem",
+                        background: "var(--bg-secondary)",
+                        color: "var(--text-primary)",
+                        border: "1px solid var(--border-color)",
+                        borderRadius: "4px",
+                        cursor: index === songs.length - 1 || isReordering || !!editId ? "not-allowed" : "pointer",
+                        fontSize: "0.9rem",
+                        opacity: index === songs.length - 1 ? 0.35 : 1,
+                      }}
+                    >
+                      ↓
+                    </button>
                     <button
                       onClick={() => startEdit(s)}
                       style={{

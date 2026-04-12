@@ -125,6 +125,10 @@ export function deleteBook(id: string): Promise<void> {
   return request<void>(`${BASE}/books/${id}`, { method: "DELETE" });
 }
 
+export function reorderBooks(ids: string[]): Promise<void> {
+  return request<void>(`${BASE}/books/reorder`, { method: "PUT", ...json({ ids }) });
+}
+
 // ── Interviews ────────────────────────────────────────────
 export function fetchInterviews(): Promise<Interview[]> {
   return request<Interview[]>(`${BASE}/interviews`);
@@ -155,6 +159,10 @@ export function deleteInterview(id: string): Promise<void> {
   return request<void>(`${BASE}/interviews/${id}`, { method: "DELETE" });
 }
 
+export function reorderInterviews(ids: string[]): Promise<void> {
+  return request<void>(`${BASE}/interviews/reorder`, { method: "PUT", ...json({ ids }) });
+}
+
 // ── Songs ─────────────────────────────────────────────────
 export function fetchSongs(): Promise<Song[]> {
   return request<Song[]>(`${BASE}/songs`);
@@ -177,6 +185,10 @@ export function updateSong(
 
 export function deleteSong(id: string): Promise<void> {
   return request<void>(`${BASE}/songs/${id}`, { method: "DELETE" });
+}
+
+export function reorderSongs(ids: string[]): Promise<void> {
+  return request<void>(`${BASE}/songs/reorder`, { method: "PUT", ...json({ ids }) });
 }
 
 // ── Auth ──────────────────────────────────────────────────

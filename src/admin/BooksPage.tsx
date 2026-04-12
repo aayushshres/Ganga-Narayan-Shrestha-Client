@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { fetchBooks, createBook, updateBook, deleteBook } from "../api/index";
+import { fetchBooks, createBook, updateBook, deleteBook, reorderBooks } from "../api/index";
 import type { Book, BookFormData } from "../types";
 import { inputStyle, labelStyle } from "../styles/admin";
 import { uploadToImgbb } from "../lib/imgbb";
@@ -29,6 +29,7 @@ export default function BooksPage() {
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
 
+  const [isReordering, setIsReordering] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [editData, setEditData] = useState<Partial<BookFormData>>({});
   const [isSaving, setIsSaving] = useState(false);
@@ -119,6 +120,21 @@ export default function BooksPage() {
     });
     setEditCoverFile(null);
     setEditCoverPreview(b.coverImage ?? null);
+  };
+
+  const handleMove = async (index: number, direction: "up" | "down") => {
+    const swapIndex = direction === "up" ? index - 1 : index + 1;
+    const next = [...books];
+    [next[index], next[swapIndex]] = [next[swapIndex], next[index]];
+    setBooks(next);
+    setIsReordering(true);
+    try {
+      await reorderBooks(next.map((b) => b._id));
+    } catch {
+      setBooks(books); // revert on failure
+    } finally {
+      setIsReordering(false);
+    }
   };
 
   const handleSave = async () => {
@@ -289,7 +305,7 @@ export default function BooksPage() {
             </tr>
           </thead>
           <tbody>
-            {books.map((b) =>
+            {books.map((b, index) =>
               editId === b._id ? (
                 <tr key={b._id}>
                   <td
@@ -432,6 +448,40 @@ export default function BooksPage() {
                       justifyContent: "flex-end",
                     }}
                   >
+                    <button
+                      onClick={() => handleMove(index, "up")}
+                      disabled={index === 0 || isReordering || !!editId}
+                      title="माथि सार्नुहोस्"
+                      style={{
+                        padding: "0.4rem 0.6rem",
+                        background: "var(--bg-secondary)",
+                        color: "var(--text-primary)",
+                        border: "1px solid var(--border-color)",
+                        borderRadius: "4px",
+                        cursor: index === 0 || isReordering || !!editId ? "not-allowed" : "pointer",
+                        fontSize: "0.9rem",
+                        opacity: index === 0 ? 0.35 : 1,
+                      }}
+                    >
+                      ↑
+                    </button>
+                    <button
+                      onClick={() => handleMove(index, "down")}
+                      disabled={index === books.length - 1 || isReordering || !!editId}
+                      title="तल सार्नुहोस्"
+                      style={{
+                        padding: "0.4rem 0.6rem",
+                        background: "var(--bg-secondary)",
+                        color: "var(--text-primary)",
+                        border: "1px solid var(--border-color)",
+                        borderRadius: "4px",
+                        cursor: index === books.length - 1 || isReordering || !!editId ? "not-allowed" : "pointer",
+                        fontSize: "0.9rem",
+                        opacity: index === books.length - 1 ? 0.35 : 1,
+                      }}
+                    >
+                      ↓
+                    </button>
                     <button
                       onClick={() => startEdit(b)}
                       style={{
