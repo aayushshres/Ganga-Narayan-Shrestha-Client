@@ -12,15 +12,7 @@ export default function AdminNav() {
   const location = useLocation();
 
   return (
-    <nav style={{
-      display: 'flex',
-      gap: '1rem',
-      padding: '1rem 2rem',
-      background: 'var(--bg-secondary)',
-      borderBottom: '1px solid var(--border-color)',
-      fontFamily: 'var(--font-body)',
-      flexWrap: 'wrap',
-    }}>
+    <nav className="admin-nav">
       {navLinks.map(({ path, label }) => {
         const isActive = location.pathname === path;
         return (

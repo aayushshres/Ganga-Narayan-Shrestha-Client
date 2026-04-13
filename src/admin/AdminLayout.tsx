@@ -1,6 +1,7 @@
 import { Navigate, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import AdminNav from "./AdminNav";
+import "../styles/admin.css";
 
 export default function AdminLayout() {
   const { isAuthenticated, logout } = useAuth();
@@ -23,25 +24,8 @@ export default function AdminLayout() {
         color: "var(--text-primary)",
       }}
     >
-      <header
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "1rem 2rem",
-          background: "var(--crimson)",
-          color: "white",
-        }}
-      >
-        <h1
-          style={{
-            fontFamily: "var(--font-display)",
-            margin: 0,
-            fontSize: "1.5rem",
-          }}
-        >
-          प्रशासन
-        </h1>
+      <header className="admin-header">
+        <h1>प्रशासन</h1>
         <button
           onClick={handleLogout}
           style={{
@@ -52,6 +36,7 @@ export default function AdminLayout() {
             borderRadius: "4px",
             cursor: "pointer",
             fontFamily: "var(--font-body)",
+            whiteSpace: "nowrap",
           }}
         >
           लग आउट
@@ -60,7 +45,7 @@ export default function AdminLayout() {
 
       <AdminNav />
 
-      <main style={{ padding: "2rem", maxWidth: "1200px", margin: "0 auto" }}>
+      <main className="admin-main">
         <Outlet />
       </main>
     </div>

@@ -44,7 +44,7 @@ export default function DashboardPage() {
     <div>
       <h2 style={{ fontFamily: 'var(--font-display)', marginBottom: '2rem' }}>ड्यासबोर्ड</h2>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '3rem' }}>
+      <div className="admin-stats-grid">
         <StatCard title="लेखहरू" value={articles.length} />
         <StatCard title="लेख" value={articleCount} />
         <StatCard title="साहित्य" value={literatureCount} />

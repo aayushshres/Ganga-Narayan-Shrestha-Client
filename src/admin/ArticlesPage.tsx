@@ -11,6 +11,7 @@ import {
 } from "../api/index";
 import type { Article, ArticleFormData } from "../types";
 import { inputStyle, labelStyle } from "../styles/admin";
+import { ExpandableCell } from "./ExpandableCell";
 
 export default function ArticlesPage() {
   const { isAuthenticated } = useAuth();
@@ -123,7 +124,7 @@ export default function ArticlesPage() {
           border: "1px solid var(--border-color)",
           marginBottom: "3rem",
           display: "grid",
-          gridTemplateColumns: "1fr 1fr",
+          gridTemplateColumns: "repeat(auto-fit, minmax(min(280px, 100%), 1fr))",
           gap: "1.5rem",
         }}
       >
@@ -209,6 +210,7 @@ export default function ArticlesPage() {
       {loading ? (
         <p>लोड हुँदैछ...</p>
       ) : (
+        <div className="admin-table-wrap">
         <table
           style={{
             width: "100%",
@@ -272,7 +274,7 @@ export default function ArticlesPage() {
                     <div
                       style={{
                         display: "grid",
-                        gridTemplateColumns: "1fr 1fr",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(min(280px, 100%), 1fr))",
                         gap: "1rem",
                       }}
                     >
@@ -366,7 +368,7 @@ export default function ArticlesPage() {
                       borderBottom: "1px solid var(--border-light)",
                     }}
                   >
-                    {a.title}
+                    <ExpandableCell text={a.title} />
                   </td>
                   <td
                     style={{
@@ -448,6 +450,7 @@ export default function ArticlesPage() {
             )}
           </tbody>
         </table>
+        </div>
       )}
     </div>
   );

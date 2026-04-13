@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { fetchSongs, createSong, updateSong, deleteSong, reorderSongs } from "../api/index";
 import type { Song, SongFormData } from "../types";
 import { inputStyle, labelStyle } from "../styles/admin";
+import { ExpandableCell } from "./ExpandableCell";
 
 export default function SongsPage() {
   const { isAuthenticated } = useAuth();
@@ -111,7 +112,7 @@ export default function SongsPage() {
           border: "1px solid var(--border-color)",
           marginBottom: "3rem",
           display: "grid",
-          gridTemplateColumns: "1fr 1fr",
+          gridTemplateColumns: "repeat(auto-fit, minmax(min(280px, 100%), 1fr))",
           gap: "1.5rem",
         }}
       >
@@ -172,6 +173,7 @@ export default function SongsPage() {
       {loading ? (
         <p>लोड हुँदैछ...</p>
       ) : (
+        <div className="admin-table-wrap">
         <table
           style={{
             width: "100%",
@@ -219,7 +221,7 @@ export default function SongsPage() {
                     <div
                       style={{
                         display: "grid",
-                        gridTemplateColumns: "1fr 1fr",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(min(280px, 100%), 1fr))",
                         gap: "1rem",
                       }}
                     >
@@ -296,7 +298,7 @@ export default function SongsPage() {
                       borderBottom: "1px solid var(--border-light)",
                     }}
                   >
-                    {s.title}
+                    <ExpandableCell text={s.title} />
                   </td>
                   <td
                     style={{
@@ -386,6 +388,7 @@ export default function SongsPage() {
             )}
           </tbody>
         </table>
+        </div>
       )}
     </div>
   );

@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { fetchBooks, createBook, updateBook, deleteBook, reorderBooks } from "../api/index";
 import type { Book, BookFormData } from "../types";
 import { inputStyle, labelStyle } from "../styles/admin";
+import { ExpandableCell } from "./ExpandableCell";
 import { uploadToImgbb } from "../lib/imgbb";
 
 const coverPreviewStyle: React.CSSProperties = {
@@ -172,7 +173,7 @@ export default function BooksPage() {
           border: "1px solid var(--border-color)",
           marginBottom: "3rem",
           display: "grid",
-          gridTemplateColumns: "1fr 1fr",
+          gridTemplateColumns: "repeat(auto-fit, minmax(min(280px, 100%), 1fr))",
           gap: "1.5rem",
         }}
       >
@@ -263,6 +264,7 @@ export default function BooksPage() {
       {loading ? (
         <p>लोड हुँदैछ...</p>
       ) : (
+        <div className="admin-table-wrap">
         <table
           style={{
             width: "100%",
@@ -318,7 +320,7 @@ export default function BooksPage() {
                     <div
                       style={{
                         display: "grid",
-                        gridTemplateColumns: "1fr 1fr",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(min(280px, 100%), 1fr))",
                         gap: "1rem",
                       }}
                     >
@@ -428,7 +430,7 @@ export default function BooksPage() {
                       fontFamily: "var(--font-devanagari)",
                     }}
                   >
-                    {b.titleNp}
+                    <ExpandableCell text={b.titleNp} />
                   </td>
                   <td
                     style={{
@@ -436,7 +438,7 @@ export default function BooksPage() {
                       borderBottom: "1px solid var(--border-light)",
                     }}
                   >
-                    {b.typeEn}
+                    <ExpandableCell text={b.typeEn} />
                   </td>
                   <td
                     style={{
@@ -526,6 +528,7 @@ export default function BooksPage() {
             )}
           </tbody>
         </table>
+        </div>
       )}
     </div>
   );
