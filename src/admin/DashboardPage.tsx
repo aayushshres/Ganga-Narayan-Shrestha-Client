@@ -31,12 +31,9 @@ export default function DashboardPage() {
   const recentArticles = articles.slice(0, 5);
 
   const StatCard = ({ title, value }: { title: string; value: number }) => (
-    <div style={{
-      background: 'var(--bg-card)', padding: '1.5rem', borderRadius: '8px',
-      border: '1px solid var(--border-color)', boxShadow: 'var(--shadow)',
-    }}>
-      <h3 style={{ margin: '0 0 0.5rem 0', color: 'var(--text-muted)', fontSize: '1rem', fontFamily: 'var(--font-body)' }}>{title}</h3>
-      <p style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold', fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>{value}</p>
+    <div className="admin-stat-card">
+      <h3>{title}</h3>
+      <p>{value}</p>
     </div>
   );
 

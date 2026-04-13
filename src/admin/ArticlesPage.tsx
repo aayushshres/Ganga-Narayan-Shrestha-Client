@@ -116,18 +116,7 @@ export default function ArticlesPage() {
         नयाँ लेख पोस्ट गर्नुहोस्
       </h2>
 
-      <div
-        style={{
-          background: "var(--bg-card)",
-          padding: "2rem",
-          borderRadius: "8px",
-          border: "1px solid var(--border-color)",
-          marginBottom: "3rem",
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(min(280px, 100%), 1fr))",
-          gap: "1.5rem",
-        }}
-      >
+      <div className="admin-form-card">
         <div style={{ gridColumn: "1 / -1" }}>
           <label style={labelStyle}>शीर्षक</label>
           <input
@@ -271,13 +260,7 @@ export default function ArticlesPage() {
                       borderBottom: "1px solid var(--border-light)",
                     }}
                   >
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(auto-fit, minmax(min(280px, 100%), 1fr))",
-                        gap: "1rem",
-                      }}
-                    >
+                    <div className="admin-form-grid">
                       <div style={{ gridColumn: "1 / -1" }}>
                         <label style={labelStyle}>शीर्षक</label>
                         <input
