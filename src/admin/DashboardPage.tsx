@@ -33,8 +33,7 @@ export default function DashboardPage() {
   const StatCard = ({ title, value }: { title: string; value: number }) => (
     <div style={{
       background: 'var(--bg-card)', padding: '1.5rem', borderRadius: '8px',
-      border: '1px solid var(--border-color)', flex: 1, minWidth: '200px',
-      boxShadow: 'var(--shadow)',
+      border: '1px solid var(--border-color)', boxShadow: 'var(--shadow)',
     }}>
       <h3 style={{ margin: '0 0 0.5rem 0', color: 'var(--text-muted)', fontSize: '1rem', fontFamily: 'var(--font-body)' }}>{title}</h3>
       <p style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold', fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>{value}</p>
@@ -45,7 +44,7 @@ export default function DashboardPage() {
     <div>
       <h2 style={{ fontFamily: 'var(--font-display)', marginBottom: '2rem' }}>ड्यासबोर्ड</h2>
 
-      <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', marginBottom: '3rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '3rem' }}>
         <StatCard title="लेखहरू" value={articles.length} />
         <StatCard title="लेख" value={articleCount} />
         <StatCard title="साहित्य" value={literatureCount} />
