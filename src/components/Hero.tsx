@@ -18,8 +18,8 @@ const title: Translatable = {
 };
 
 const quote: Translatable = {
-  en: "Committed to building a prosperous and advanced Nepal rooted in a modern, evolving Marxist framework. We will put an end to all forms of discrimination, inequality, injustice, exploitation, and oppression. Our nation will stand on the pillars of justice, equality, freedom, and fraternity, ensuring a bright and dignified future for every citizen.",
-  np: "युगानुकूल विकसित मार्क्सवादी विचारको जगमा सबै प्रकारका विभेद, असमानता, अन्याय, शोषण, दमनको अन्त्य गर्दै न्याय, समानता, स्वतन्त्रता र भातृत्वमा आधारित समृद्ध  र समुन्नत नेपाल निर्माण ।",
+  en: "Justice, equality, liberty, and fraternity — not as aspirations, but as the very foundation of my politics.",
+  np: "न्याय, समानता, स्वतन्त्रता र भातृत्व — यी केवल आदर्श होइनन्, यिनै मेरो राजनीतिको जग हुन्।",
 };
 
 export default function Hero() {
