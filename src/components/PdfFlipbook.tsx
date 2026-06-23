@@ -495,6 +495,11 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
     livePan(panValRef.current.x, panValRef.current.y);
   }, [zoom, livePan]);
 
+  // On small screens, auto-close thumbnails when zoomed (no room for both).
+  useEffect(() => {
+    if (zoom > 1 && !autoWide && showThumbs) setShowThumbs(false);
+  }, [zoom, autoWide, showThumbs]);
+
   // Desktop: click-and-drag to pan while zoomed. Filtered to mouse pointers so
   // it never double-handles touch (which is covered by the touch listeners).
   useEffect(() => {
@@ -562,6 +567,8 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
 
   // When zoomed, give the page the whole screen and float the controls on top.
   const zoomed = zoom > 1;
+  // Thumbnails are unavailable while zoomed on small screens (no room).
+  const thumbsAvailable = !(zoomed && !wide);
 
   const overlayStyle: React.CSSProperties = {
     position: "fixed",
@@ -596,6 +603,7 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
   const controlBtnStyle: React.CSSProperties = {
     width: "44px",
     height: "44px",
+    flex: "0 0 auto", // never shrink → keep circular, prevent oval distortion
     borderRadius: "50%",
     background: "var(--crimson)",
     color: "white",
@@ -850,7 +858,7 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
               <IconChevronLeft />
             </button>
 
-            <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem", flex: "0 0 auto" }}>
               <input
                 value={jumpStr}
                 onChange={(e) => setJumpStr(e.target.value.replace(/[^0-9]/g, ""))}
@@ -901,20 +909,22 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
             >
               {twoPage ? <IconOnePage /> : <IconTwoPage />}
             </button>
-            <button
-              style={{
-                ...controlBtnStyle,
-                background: showThumbs ? "#9c7b1f" : "var(--crimson)",
-              }}
-              onClick={() => setShowThumbs((s) => !s)}
-              aria-label="पृष्ठहरूको सूची"
-              title="Thumbnails"
-            >
-              <IconGrid />
-            </button>
+            {thumbsAvailable && (
+              <button
+                style={{
+                  ...controlBtnStyle,
+                  background: showThumbs ? "#9c7b1f" : "var(--crimson)",
+                }}
+                onClick={() => setShowThumbs((s) => !s)}
+                aria-label="पृष्ठहरूको सूची"
+                title="Thumbnails"
+              >
+                <IconGrid />
+              </button>
+            )}
 
             {/* Zoom level: shows %, click for a preset menu (100% = reset). */}
-            <div style={{ position: "relative", display: "inline-flex" }}>
+            <div style={{ position: "relative", display: "inline-flex", flex: "0 0 auto" }}>
               <button
                 style={{
                   ...controlBtnStyle,
