@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
 import { fetchBook } from "../api/index";
@@ -6,6 +6,8 @@ import { usePageMeta } from "../hooks/usePageMeta";
 import type { PageMeta } from "../hooks/usePageMeta";
 import type { Book } from "../types";
 import BookCover from "./BookCover";
+
+const PdfFlipbook = lazy(() => import("./PdfFlipbook"));
 
 const API_URL = import.meta.env.VITE_API_URL as string;
 
@@ -18,6 +20,7 @@ export default function BookDetail() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [pageMeta, setPageMeta] = useState<PageMeta | null>(null);
+  const [showFlipbook, setShowFlipbook] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -83,6 +86,36 @@ export default function BookDetail() {
       <p style={{ textAlign: "center", marginTop: "1rem", color: "var(--text-muted)" }}>
         {yearDisplay}
       </p>
+
+      {book.pdfUrl && (
+        <div style={{ display: "flex", justifyContent: "center", marginTop: "2rem" }}>
+          <button
+            onClick={() => setShowFlipbook(true)}
+            style={{
+              background: "var(--crimson)",
+              color: "white",
+              border: "none",
+              padding: "0.75rem 2rem",
+              borderRadius: "4px",
+              cursor: "pointer",
+              fontFamily: "var(--font-display)",
+              fontSize: "1.1rem",
+            }}
+          >
+            📖 {lang === "np" ? "पुस्तक पढ्नुहोस्" : "Read Book"}
+          </button>
+        </div>
+      )}
+
+      {showFlipbook && book.pdfUrl && (
+        <Suspense fallback={null}>
+          <PdfFlipbook
+            url={book.pdfUrl}
+            title={book.titleNp}
+            onClose={() => setShowFlipbook(false)}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }

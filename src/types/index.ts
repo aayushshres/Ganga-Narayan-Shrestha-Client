@@ -46,6 +46,7 @@ export interface Book {
   yearBs: string;
   order: number;
   coverImage?: string;
+  pdfUrl?: string;
 }
 
 export interface Interview {

@@ -129,6 +129,19 @@ export function reorderBooks(ids: string[]): Promise<void> {
   return request<void>(`${BASE}/books/reorder`, { method: "PUT", ...json({ ids }) });
 }
 
+export function uploadBookPdf(bookId: string, file: File): Promise<Book> {
+  const formData = new FormData();
+  formData.append("pdf", file);
+  return request<Book>(`${BASE}/books/${bookId}/pdf`, {
+    method: "POST",
+    body: formData,
+  });
+}
+
+export function deleteBookPdf(bookId: string): Promise<Book> {
+  return request<Book>(`${BASE}/books/${bookId}/pdf`, { method: "DELETE" });
+}
+
 // ── Interviews ────────────────────────────────────────────
 export function fetchInterviews(): Promise<Interview[]> {
   return request<Interview[]>(`${BASE}/interviews`);

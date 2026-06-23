@@ -1,6 +1,14 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { fetchBooks, createBook, updateBook, deleteBook, reorderBooks } from "../api/index";
+import {
+  fetchBooks,
+  createBook,
+  updateBook,
+  deleteBook,
+  reorderBooks,
+  uploadBookPdf,
+  deleteBookPdf,
+} from "../api/index";
 import type { Book, BookFormData } from "../types";
 import { inputStyle, labelStyle } from "../styles/admin";
 import { ExpandableCell } from "./ExpandableCell";
@@ -29,6 +37,8 @@ export default function BooksPage() {
   const [yearBs, setYearBs] = useState("");
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [pdfStatus, setPdfStatus] = useState("");
 
   const [isReordering, setIsReordering] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -36,6 +46,8 @@ export default function BooksPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [editCoverFile, setEditCoverFile] = useState<File | null>(null);
   const [editCoverPreview, setEditCoverPreview] = useState<string | null>(null);
+  const [editPdfFile, setEditPdfFile] = useState<File | null>(null);
+  const [isRemovingPdf, setIsRemovingPdf] = useState(false);
 
   const loadBooks = () => {
     setLoading(true);
@@ -83,18 +95,27 @@ export default function BooksPage() {
         ...(coverImage ? { coverImage } : {}),
       };
 
-      await createBook(data);
+      const newBook = await createBook(data);
+
+      if (pdfFile) {
+        setPdfStatus("PDF अपलोड हुँदैछ...");
+        await uploadBookPdf(newBook._id, pdfFile);
+        setPdfStatus("");
+      }
+
       setSubmitSuccess("पुस्तक सफलतापूर्वक थपियो!");
       setTitleNp("");
       setTypeEn("");
       setYearBs("");
       setCoverFile(null);
       setCoverPreview(null);
+      setPdfFile(null);
       loadBooks();
       setTimeout(() => setSubmitSuccess(""), 3000);
     } catch (err: unknown) {
       setIsUploading(false);
-      setSubmitError((err as Error).message || "Unknown error");
+      setPdfStatus("");
+      setSubmitError((err as Error).message || "PDF अपलोड गर्दा त्रुटि भयो");
     } finally {
       setIsSubmitting(false);
     }
@@ -118,9 +139,26 @@ export default function BooksPage() {
       yearBs: b.yearBs,
       order: b.order,
       coverImage: b.coverImage,
+      pdfUrl: b.pdfUrl,
     });
     setEditCoverFile(null);
     setEditCoverPreview(b.coverImage ?? null);
+    setEditPdfFile(null);
+  };
+
+  const handleRemovePdf = async () => {
+    if (!editId) return;
+    if (!window.confirm("यो PDF हटाउने?")) return;
+    setIsRemovingPdf(true);
+    try {
+      const updated = await deleteBookPdf(editId);
+      setEditData((prev) => ({ ...prev, pdfUrl: undefined }));
+      setBooks((prev) => prev.map((b) => (b._id === editId ? updated : b)));
+    } catch (err: unknown) {
+      alert((err as Error).message || "PDF हटाउँदा त्रुटि भयो");
+    } finally {
+      setIsRemovingPdf(false);
+    }
   };
 
   const handleMove = async (index: number, direction: "up" | "down") => {
@@ -147,13 +185,22 @@ export default function BooksPage() {
         const coverImage = await uploadToImgbb(editCoverFile);
         updatedData = { ...updatedData, coverImage };
       }
-      const updated = await updateBook(editId, updatedData);
+      let updated = await updateBook(editId, updatedData);
+
+      if (editPdfFile) {
+        setPdfStatus("PDF अपलोड हुँदैछ...");
+        updated = await uploadBookPdf(editId, editPdfFile);
+        setPdfStatus("");
+      }
+
       setBooks(books.map((b) => (b._id === editId ? updated : b)));
       setEditId(null);
       setEditCoverFile(null);
       setEditCoverPreview(null);
+      setEditPdfFile(null);
     } catch (err: unknown) {
-      alert((err as Error).message || "Unknown error");
+      setPdfStatus("");
+      alert((err as Error).message || "PDF अपलोड गर्दा त्रुटि भयो");
     } finally {
       setIsSaving(false);
     }
@@ -213,6 +260,25 @@ export default function BooksPage() {
           )}
         </div>
         <div style={{ gridColumn: "1 / -1" }}>
+          <label style={labelStyle}>पुस्तक PDF (ऐच्छिक)</label>
+          <input
+            type="file"
+            accept=".pdf,application/pdf"
+            onChange={(e) => setPdfFile(e.target.files?.[0] ?? null)}
+            style={{ ...inputStyle, cursor: "pointer" }}
+          />
+          {pdfFile && (
+            <p style={{ marginTop: "0.5rem", color: "var(--text-muted)" }}>
+              📄 {pdfFile.name}
+            </p>
+          )}
+        </div>
+        <div style={{ gridColumn: "1 / -1" }}>
+          {pdfStatus && (
+            <p style={{ color: "var(--text-muted)", marginBottom: "1rem" }}>
+              {pdfStatus}
+            </p>
+          )}
           {submitSuccess && (
             <p style={{ color: "green", marginBottom: "1rem" }}>
               {submitSuccess}
@@ -362,6 +428,58 @@ export default function BooksPage() {
                           />
                         )}
                       </div>
+                      <div style={{ gridColumn: "1 / -1" }}>
+                        <label style={labelStyle}>पुस्तक PDF</label>
+                        {editData.pdfUrl ? (
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "0.75rem",
+                              marginBottom: "0.5rem",
+                            }}
+                          >
+                            <span style={{ color: "green" }}>📄 PDF अपलोड भएको छ</span>
+                            <button
+                              type="button"
+                              onClick={handleRemovePdf}
+                              disabled={isRemovingPdf}
+                              style={{
+                                padding: "0.3rem 0.8rem",
+                                background: "#D32F2F",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "4px",
+                                cursor: isRemovingPdf ? "not-allowed" : "pointer",
+                                fontSize: "0.85rem",
+                              }}
+                            >
+                              {isRemovingPdf ? "हट्दैछ..." : "PDF हटाउनुहोस्"}
+                            </button>
+                          </div>
+                        ) : (
+                          <p style={{ color: "var(--text-muted)", marginBottom: "0.5rem" }}>
+                            कुनै PDF छैन
+                          </p>
+                        )}
+                        <input
+                          type="file"
+                          accept=".pdf,application/pdf"
+                          onChange={(e) => setEditPdfFile(e.target.files?.[0] ?? null)}
+                          style={{ ...inputStyle, cursor: "pointer" }}
+                        />
+                        {editPdfFile && (
+                          <p style={{ marginTop: "0.5rem", color: "var(--text-muted)" }}>
+                            📄 {editPdfFile.name}{" "}
+                            {editData.pdfUrl ? "(प्रतिस्थापन गरिनेछ)" : ""}
+                          </p>
+                        )}
+                        {pdfStatus && (
+                          <p style={{ marginTop: "0.5rem", color: "var(--text-muted)" }}>
+                            {pdfStatus}
+                          </p>
+                        )}
+                      </div>
                       <div
                         style={{
                           gridColumn: "1 / -1",
@@ -388,6 +506,7 @@ export default function BooksPage() {
                             setEditId(null);
                             setEditCoverFile(null);
                             setEditCoverPreview(null);
+                            setEditPdfFile(null);
                           }}
                           style={{
                             padding: "0.5rem 1.2rem",
