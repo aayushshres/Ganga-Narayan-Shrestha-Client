@@ -39,6 +39,53 @@ function buildSpreads(numPages: number, twoPage: boolean): number[][] {
   return spreads;
 }
 
+// ── Icons (stroke = currentColor so they inherit button colour) ───────────────
+const svgProps = {
+  width: 20,
+  height: 20,
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 2.2,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+};
+const IconChevronLeft = () => (
+  <svg {...svgProps}>
+    <polyline points="15 18 9 12 15 6" />
+  </svg>
+);
+const IconChevronRight = () => (
+  <svg {...svgProps}>
+    <polyline points="9 18 15 12 9 6" />
+  </svg>
+);
+const IconClose = () => (
+  <svg {...svgProps}>
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
+const IconGrid = () => (
+  <svg {...svgProps}>
+    <rect x="3" y="3" width="7" height="7" rx="1" />
+    <rect x="14" y="3" width="7" height="7" rx="1" />
+    <rect x="3" y="14" width="7" height="7" rx="1" />
+    <rect x="14" y="14" width="7" height="7" rx="1" />
+  </svg>
+);
+const IconOnePage = () => (
+  <svg {...svgProps}>
+    <rect x="7" y="4" width="10" height="16" rx="1.5" />
+  </svg>
+);
+const IconTwoPage = () => (
+  <svg {...svgProps}>
+    <rect x="3" y="4" width="8" height="16" rx="1.5" />
+    <rect x="13" y="4" width="8" height="16" rx="1.5" />
+  </svg>
+);
+
 // ── Lazily-rendered thumbnail (renders only once scrolled near view) ──────────
 function Thumb({
   index,
@@ -395,7 +442,9 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
         const z = clampZoom(stateRef.current.zoom - e.deltaY * 0.012);
         setZoom(z);
         if (z === 1) resetPan();
-      } else if (stateRef.current.zoom > 1) {
+        return;
+      }
+      if (stateRef.current.zoom > 1) {
         e.preventDefault();
         livePan(
           panValRef.current.x - e.deltaX,
@@ -406,12 +455,6 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
   }, [numPages, livePan, resetPan]);
-
-  const setZoomTo = (next: number) => {
-    const z = clampZoom(next);
-    setZoom(z);
-    if (z === 1) resetPan();
-  };
 
   // System font so the page-number input and the "/ N" label match.
   const numFont = "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
@@ -437,26 +480,27 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
     borderRadius: "50%",
     width: "42px",
     height: "42px",
-    fontSize: "1.3rem",
     cursor: "pointer",
-    lineHeight: 1,
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 0,
     zIndex: 1001,
   };
 
   const controlBtnStyle: React.CSSProperties = {
+    width: "44px",
+    height: "44px",
+    borderRadius: "50%",
     background: "var(--crimson)",
     color: "white",
     border: "none",
-    minWidth: "44px",
-    height: "40px",
-    padding: "0 0.6rem",
-    borderRadius: "4px",
     cursor: "pointer",
-    fontFamily: "var(--font-display)",
-    fontSize: "1.2rem",
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
+    padding: 0,
+    boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
   };
 
   const cur = spreads[spreadIdx] ?? [0];
@@ -478,7 +522,7 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
   return (
     <div style={overlayStyle} role="dialog" aria-modal="true" aria-label={title}>
       <button onClick={onClose} style={closeBtnStyle} aria-label="बन्द गर्नुहोस्">
-        ✕
+        <IconClose />
       </button>
 
       {error ? (
@@ -668,21 +712,16 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
             }}
           >
             <button
-              style={{ ...controlBtnStyle, opacity: zoom <= MIN_ZOOM ? 0.4 : 1 }}
-              onClick={() => setZoomTo(zoom - 0.5)}
-              disabled={zoom <= MIN_ZOOM}
-              aria-label="सानो बनाउनुहोस्"
-              title="Zoom out"
-            >
-              −
-            </button>
-            <button
-              style={{ ...controlBtnStyle, opacity: spreadIdx === 0 ? 0.4 : 1 }}
+              style={{
+                ...controlBtnStyle,
+                opacity: spreadIdx === 0 ? 0.4 : 1,
+                cursor: spreadIdx === 0 ? "default" : "pointer",
+              }}
               onClick={() => goToSpread(spreadIdx - 1)}
               disabled={spreadIdx === 0}
               aria-label="अघिल्लो पृष्ठ"
             >
-              ←
+              <IconChevronLeft />
             </button>
 
             <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
@@ -700,9 +739,10 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
                 aria-label="पृष्ठ नम्बर"
                 style={{
                   width: "3rem",
+                  height: "44px",
                   textAlign: "center",
-                  padding: "0.3rem",
-                  borderRadius: "4px",
+                  padding: "0 0.3rem",
+                  borderRadius: "22px",
                   border: "1px solid rgba(255,255,255,0.3)",
                   background: "rgba(255,255,255,0.1)",
                   color: "white",
@@ -719,41 +759,32 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
               style={{
                 ...controlBtnStyle,
                 opacity: spreadIdx >= spreads.length - 1 ? 0.4 : 1,
+                cursor: spreadIdx >= spreads.length - 1 ? "default" : "pointer",
               }}
               onClick={() => goToSpread(spreadIdx + 1)}
               disabled={spreadIdx >= spreads.length - 1}
               aria-label="अर्को पृष्ठ"
             >
-              →
+              <IconChevronRight />
             </button>
             <button
-              style={{ ...controlBtnStyle, opacity: zoom >= MAX_ZOOM ? 0.4 : 1 }}
-              onClick={() => setZoomTo(zoom + 0.5)}
-              disabled={zoom >= MAX_ZOOM}
-              aria-label="ठूलो बनाउनुहोस्"
-              title="Zoom in"
-            >
-              +
-            </button>
-            <button
-              style={{ ...controlBtnStyle, fontSize: "1rem", letterSpacing: "1px" }}
+              style={controlBtnStyle}
               onClick={() => setManualTwoPage(!twoPage)}
               aria-label="एक वा दुई पाना"
               title={twoPage ? "एक पाना देखाउनुहोस्" : "दुई पाना देखाउनुहोस्"}
             >
-              {twoPage ? "▯▯" : "▯"}
+              {twoPage ? <IconOnePage /> : <IconTwoPage />}
             </button>
             <button
               style={{
                 ...controlBtnStyle,
-                fontSize: "1rem",
                 background: showThumbs ? "#9c7b1f" : "var(--crimson)",
               }}
               onClick={() => setShowThumbs((s) => !s)}
               aria-label="पृष्ठहरूको सूची"
               title="Thumbnails"
             >
-              ▦
+              <IconGrid />
             </button>
           </div>
         </>
