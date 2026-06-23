@@ -3,6 +3,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { inputStyle } from '../styles/admin';
 import { IconEye, IconEyeOff } from '../components/icons';
+import SettingsToggles from '../components/SettingsToggles';
 
 export default function LoginPage() {
   const { isAuthenticated, login } = useAuth();
@@ -52,6 +53,9 @@ export default function LoginPage() {
         maxWidth: '400px',
         border: '1px solid var(--border-color)',
       }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+          <SettingsToggles />
+        </div>
         <h2 style={{
           textAlign: 'center',
           marginBottom: '2rem',
