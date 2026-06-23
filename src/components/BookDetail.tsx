@@ -49,6 +49,25 @@ export default function BookDetail() {
 
   usePageMeta(pageMeta);
 
+  const handleDownload = async () => {
+    if (!book?.pdfUrl) return;
+    try {
+      const res = await fetch(book.pdfUrl);
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = `${book.titleNp}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch {
+      // Fallback: let the browser handle it directly.
+      window.open(book.pdfUrl, "_blank", "noopener");
+    }
+  };
+
   if (loading) {
     return (
       <div className="detail-page">
@@ -88,7 +107,15 @@ export default function BookDetail() {
       </p>
 
       {book.pdfUrl && (
-        <div style={{ display: "flex", justifyContent: "center", marginTop: "2rem" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: "0.75rem",
+            marginTop: "2rem",
+            flexWrap: "wrap",
+          }}
+        >
           <button
             onClick={() => setShowFlipbook(true)}
             style={{
@@ -102,7 +129,22 @@ export default function BookDetail() {
               fontSize: "1.1rem",
             }}
           >
-            📖 {lang === "np" ? "पुस्तक पढ्नुहोस्" : "Read Book"}
+            {lang === "np" ? "पुस्तक पढ्नुहोस्" : "Read Book"}
+          </button>
+          <button
+            onClick={handleDownload}
+            style={{
+              background: "transparent",
+              color: "var(--crimson)",
+              border: "1px solid var(--crimson)",
+              padding: "0.75rem 2rem",
+              borderRadius: "4px",
+              cursor: "pointer",
+              fontFamily: "var(--font-display)",
+              fontSize: "1.1rem",
+            }}
+          >
+            {lang === "np" ? "डाउनलोड गर्नुहोस्" : "Download"}
           </button>
         </div>
       )}
