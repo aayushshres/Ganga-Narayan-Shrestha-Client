@@ -6,7 +6,6 @@ import {
   updateBook,
   deleteBook,
   reorderBooks,
-  pinBook,
   uploadBookPdf,
   deleteBookPdf,
 } from "../api/index";
@@ -14,7 +13,6 @@ import type { Book, BookFormData } from "../types";
 import { inputStyle, labelStyle } from "../styles/admin";
 import { ExpandableCell } from "./ExpandableCell";
 import { uploadToImgbb } from "../lib/imgbb";
-import { IconPin } from "../components/icons";
 
 const coverPreviewStyle: React.CSSProperties = {
   width: "100px",
@@ -133,14 +131,6 @@ export default function BooksPage() {
     }
   };
 
-  const handlePin = async (id: string) => {
-    try {
-      await pinBook(id);
-      loadBooks();
-    } catch (err: unknown) {
-      alert((err as Error).message || "Unknown error");
-    }
-  };
 
   const startEdit = (b: Book) => {
     setEditId(b._id);
@@ -596,24 +586,6 @@ export default function BooksPage() {
                       }}
                     >
                       ↓
-                    </button>
-                    <button
-                      onClick={() => handlePin(b._id)}
-                      title={b.pinned ? "अनपिन गर्नुहोस्" : "माथि पिन गर्नुहोस्"}
-                      disabled={!!editId}
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        padding: "0.4rem 0.55rem",
-                        background: b.pinned ? "#b8901f" : "var(--bg-secondary)",
-                        color: b.pinned ? "white" : "var(--text-primary)",
-                        border: b.pinned ? "1px solid #b8901f" : "1px solid var(--border-color)",
-                        borderRadius: "4px",
-                        cursor: editId ? "not-allowed" : "pointer",
-                      }}
-                    >
-                      <IconPin size={16} />
                     </button>
                     <button
                       onClick={() => startEdit(b)}

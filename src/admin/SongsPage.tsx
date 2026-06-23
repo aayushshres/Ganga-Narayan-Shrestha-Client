@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { fetchSongs, createSong, updateSong, deleteSong, reorderSongs, pinSong } from "../api/index";
+import { fetchSongs, createSong, updateSong, deleteSong, reorderSongs } from "../api/index";
 import type { Song, SongFormData } from "../types";
 import { inputStyle, labelStyle } from "../styles/admin";
 import { ExpandableCell } from "./ExpandableCell";
-import { IconPin } from "../components/icons";
 
 export default function SongsPage() {
   const { isAuthenticated } = useAuth();
@@ -65,14 +64,6 @@ export default function SongsPage() {
     }
   };
 
-  const handlePin = async (id: string) => {
-    try {
-      await pinSong(id);
-      loadSongs();
-    } catch (err: unknown) {
-      alert((err as Error).message || "Unknown error");
-    }
-  };
 
   const handleMove = async (index: number, direction: "up" | "down") => {
     const swapIndex = direction === "up" ? index - 1 : index + 1;
@@ -336,24 +327,6 @@ export default function SongsPage() {
                       }}
                     >
                       ↓
-                    </button>
-                    <button
-                      onClick={() => handlePin(s._id)}
-                      title={s.pinned ? "अनपिन गर्नुहोस्" : "माथि पिन गर्नुहोस्"}
-                      disabled={!!editId}
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        padding: "0.4rem 0.55rem",
-                        background: s.pinned ? "#b8901f" : "var(--bg-secondary)",
-                        color: s.pinned ? "white" : "var(--text-primary)",
-                        border: s.pinned ? "1px solid #b8901f" : "1px solid var(--border-color)",
-                        borderRadius: "4px",
-                        cursor: editId ? "not-allowed" : "pointer",
-                      }}
-                    >
-                      <IconPin size={16} />
                     </button>
                     <button
                       onClick={() => startEdit(s)}

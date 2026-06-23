@@ -6,12 +6,10 @@ import {
   updateInterview,
   deleteInterview,
   reorderInterviews,
-  pinInterview,
 } from "../api/index";
 import type { Interview, InterviewFormData } from "../types";
 import { inputStyle, labelStyle } from "../styles/admin";
 import { ExpandableCell } from "./ExpandableCell";
-import { IconPin } from "../components/icons";
 
 export default function InterviewsPage() {
   const { isAuthenticated } = useAuth();
@@ -74,14 +72,6 @@ export default function InterviewsPage() {
     }
   };
 
-  const handlePin = async (id: string) => {
-    try {
-      await pinInterview(id);
-      loadInterviews();
-    } catch (err: unknown) {
-      alert((err as Error).message || "Unknown error");
-    }
-  };
 
   const handleMove = async (index: number, direction: "up" | "down") => {
     const swapIndex = direction === "up" ? index - 1 : index + 1;
@@ -391,24 +381,6 @@ export default function InterviewsPage() {
                       }}
                     >
                       ↓
-                    </button>
-                    <button
-                      onClick={() => handlePin(i._id)}
-                      title={i.pinned ? "अनपिन गर्नुहोस्" : "माथि पिन गर्नुहोस्"}
-                      disabled={!!editId}
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        padding: "0.4rem 0.55rem",
-                        background: i.pinned ? "#b8901f" : "var(--bg-secondary)",
-                        color: i.pinned ? "white" : "var(--text-primary)",
-                        border: i.pinned ? "1px solid #b8901f" : "1px solid var(--border-color)",
-                        borderRadius: "4px",
-                        cursor: editId ? "not-allowed" : "pointer",
-                      }}
-                    >
-                      <IconPin size={16} />
                     </button>
                     <button
                       onClick={() => startEdit(i)}

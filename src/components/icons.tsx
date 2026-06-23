@@ -57,13 +57,6 @@ export const IconDownload = ({ size }: IconProps) => (
   </svg>
 );
 
-export const IconPin = ({ size }: IconProps) => (
-  <svg {...stroke(size)}>
-    <line x1="12" y1="17" x2="12" y2="22" />
-    <path d="M5 17h14l-1.5-4.5V5a1 1 0 0 0-1-1h-9a1 1 0 0 0-1 1v7.5z" />
-  </svg>
-);
-
 export const IconBook = ({ size }: IconProps) => (
   <svg {...stroke(size)}>
     <path d="M2 4h6a4 4 0 0 1 4 4v12a3 3 0 0 0-3-3H2z" />

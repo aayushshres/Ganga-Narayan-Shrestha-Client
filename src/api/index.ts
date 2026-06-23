@@ -105,10 +105,6 @@ export function reorderArticles(ids: string[]): Promise<void> {
   return request<void>(`${BASE}/articles/reorder`, { method: "PUT", ...json({ ids }) });
 }
 
-export function pinArticle(id: string): Promise<void> {
-  return request<void>(`${BASE}/articles/${id}/pin`, { method: "PUT" });
-}
-
 // ── Books ─────────────────────────────────────────────────
 export function fetchBooks(): Promise<Book[]> {
   return request<Book[]>(`${BASE}/books`);
@@ -135,10 +131,6 @@ export function deleteBook(id: string): Promise<void> {
 
 export function reorderBooks(ids: string[]): Promise<void> {
   return request<void>(`${BASE}/books/reorder`, { method: "PUT", ...json({ ids }) });
-}
-
-export function pinBook(id: string): Promise<void> {
-  return request<void>(`${BASE}/books/${id}/pin`, { method: "PUT" });
 }
 
 export function uploadBookPdf(bookId: string, file: File): Promise<Book> {
@@ -188,10 +180,6 @@ export function reorderInterviews(ids: string[]): Promise<void> {
   return request<void>(`${BASE}/interviews/reorder`, { method: "PUT", ...json({ ids }) });
 }
 
-export function pinInterview(id: string): Promise<void> {
-  return request<void>(`${BASE}/interviews/${id}/pin`, { method: "PUT" });
-}
-
 // ── Songs ─────────────────────────────────────────────────
 export function fetchSongs(): Promise<Song[]> {
   return request<Song[]>(`${BASE}/songs`);
@@ -218,10 +206,6 @@ export function deleteSong(id: string): Promise<void> {
 
 export function reorderSongs(ids: string[]): Promise<void> {
   return request<void>(`${BASE}/songs/reorder`, { method: "PUT", ...json({ ids }) });
-}
-
-export function pinSong(id: string): Promise<void> {
-  return request<void>(`${BASE}/songs/${id}/pin`, { method: "PUT" });
 }
 
 // ── Auth ──────────────────────────────────────────────────

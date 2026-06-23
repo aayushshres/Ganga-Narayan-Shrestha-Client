@@ -9,12 +9,10 @@ import {
   updateArticle,
   deleteArticle,
   reorderArticles,
-  pinArticle,
 } from "../api/index";
 import type { Article, ArticleFormData } from "../types";
 import { inputStyle, labelStyle } from "../styles/admin";
 import { ExpandableCell } from "./ExpandableCell";
-import { IconPin } from "../components/icons";
 
 export default function ArticlesPage() {
   const { isAuthenticated } = useAuth();
@@ -101,14 +99,6 @@ export default function ArticlesPage() {
     }
   };
 
-  const handlePin = async (id: string) => {
-    try {
-      await pinArticle(id);
-      loadArticles();
-    } catch (err: unknown) {
-      alert((err as Error).message || "Unknown error");
-    }
-  };
 
   const startEdit = async (a: Article) => {
     const full = await fetchArticle(a._id).catch(() => a);
@@ -451,23 +441,6 @@ export default function ArticlesPage() {
                       }}
                     >
                       ↓
-                    </button>
-                    <button
-                      onClick={() => handlePin(a._id)}
-                      title={a.pinned ? "अनपिन गर्नुहोस्" : "माथि पिन गर्नुहोस्"}
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        padding: "0.4rem 0.55rem",
-                        background: a.pinned ? "#b8901f" : "var(--bg-secondary)",
-                        color: a.pinned ? "white" : "var(--text-primary)",
-                        border: a.pinned ? "1px solid #b8901f" : "1px solid var(--border-color)",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      <IconPin size={16} />
                     </button>
                     <button
                       onClick={() => startEdit(a)}
