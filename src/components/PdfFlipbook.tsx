@@ -28,6 +28,8 @@ const PAGE_WIDTH = 420;
 const PAGE_HEIGHT = 560;
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 3;
+// Rasterise each page at a generous resolution so it stays sharp when zoomed in.
+const RENDER_WIDTH = 1200;
 
 const clampZoom = (z: number) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, z));
 
@@ -49,7 +51,7 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
 
-  // Coarse pointer ⇒ touch device. Used to lighten the flip animation.
+  // Coarse pointer ⇒ touch device: show a single page and use pinch/pan.
   const [isMobile] = useState(
     () =>
       typeof window !== "undefined" &&
@@ -58,7 +60,10 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
 
   const ready = pages.length > 0 && loaded >= total && total > 0;
 
-  // Mirror zoom/pan into refs so the native gesture listeners read live values.
+  // Desktop shows a two-page spread; mobile a single page.
+  const spreadWidth = isMobile ? PAGE_WIDTH : PAGE_WIDTH * 2;
+
+  // Mirror zoom/pan into refs so native gesture/key listeners read live values.
   const zoomRef = useRef(zoom);
   zoomRef.current = zoom;
   const panRef = useRef(pan);
@@ -110,22 +115,40 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
     [pages],
   );
 
-  // Close on Escape.
+  // Keyboard: ← / → flip, ↑ / ↓ scroll (desktop) or pan (mobile), Esc closes.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (!ready) return;
+      if (e.key === "ArrowLeft") {
+        flipBook.current?.pageFlip()?.flipPrev();
+        e.preventDefault();
+      } else if (e.key === "ArrowRight") {
+        flipBook.current?.pageFlip()?.flipNext();
+        e.preventDefault();
+      } else if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+        const dir = e.key === "ArrowUp" ? -1 : 1;
+        if (isMobile) {
+          if (zoomRef.current > 1) {
+            setPan((p) => ({ ...p, y: p.y - dir * 40 }));
+          }
+        } else {
+          viewportRef.current?.scrollBy({ top: dir * 60 });
+        }
+        e.preventDefault();
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, [onClose, ready, isMobile]);
 
   // Render every PDF page to an offscreen canvas, collect data URLs.
   useEffect(() => {
     let cancelled = false;
     const rendered: string[] = [];
-    // Cap the device-pixel-ratio so we don't render needlessly huge bitmaps,
-    // which is the main cause of janky flips on mobile.
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
     (async () => {
       try {
@@ -137,10 +160,9 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
           if (cancelled) return;
           const page = await pdf.getPage(i);
           const base = page.getViewport({ scale: 1 });
-          // Render roughly at the on-screen page size × dpr, capped to keep
-          // canvases small enough to flip smoothly on low-end devices.
-          let scale = (PAGE_WIDTH * dpr) / base.width;
-          if (base.width * scale > 1100) scale = 1100 / base.width;
+          // High enough to stay crisp at max zoom, capped so we never produce
+          // absurdly large canvases for small source pages.
+          const scale = Math.min(RENDER_WIDTH / base.width, MAX_ZOOM + 1);
           const viewport = page.getViewport({ scale });
           const canvas = document.createElement("canvas");
           const ctx = canvas.getContext("2d");
@@ -148,7 +170,7 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
           canvas.width = viewport.width;
           canvas.height = viewport.height;
           await page.render({ canvas, canvasContext: ctx, viewport }).promise;
-          rendered.push(canvas.toDataURL("image/jpeg", 0.82));
+          rendered.push(canvas.toDataURL("image/jpeg", 0.85));
           if (cancelled) return;
           setLoaded(i);
         }
@@ -166,13 +188,12 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
     };
   }, [url]);
 
-  // Pinch-to-zoom and one-finger pan (while zoomed) on touch devices.
-  // Listeners run in the capture phase so they can intercept gestures before
-  // react-pageflip's own touch handling, while leaving single-finger swipes at
-  // zoom = 1 untouched so page-flipping still works.
+  // Pinch-to-zoom and one-finger pan (mobile only). Listeners run in the
+  // capture phase so they intercept gestures before react-pageflip, while
+  // leaving single-finger swipes at zoom = 1 free for page-flipping.
   useEffect(() => {
     const el = viewportRef.current;
-    if (!el || !ready) return;
+    if (!el || !ready || !isMobile) return;
 
     const gesture = {
       mode: "none" as "none" | "pinch" | "pan",
@@ -231,7 +252,7 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
       el.removeEventListener("touchend", onEnd, { capture: true });
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready]);
+  }, [ready, isMobile]);
 
   const overlayStyle: React.CSSProperties = {
     position: "fixed",
@@ -276,6 +297,30 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
     justifyContent: "center",
   };
 
+  // The flipbook itself — identical for both layouts; only the wrapper differs.
+  const flipBookEl = (
+    // @ts-expect-error react-pageflip's typings mark every setting as required
+    <HTMLFlipBook
+      ref={flipBook}
+      width={PAGE_WIDTH}
+      height={PAGE_HEIGHT}
+      size="fixed"
+      showCover={true}
+      usePortrait={isMobile}
+      mobileScrollSupport={true}
+      drawShadow={true}
+      maxShadowOpacity={0.6}
+      showPageCorners={true}
+      flippingTime={isMobile ? 900 : 1100}
+      useMouseEvents={zoom === 1}
+      startPage={0}
+      onInit={handleInit}
+      onFlip={handleFlip}
+    >
+      {pageElements}
+    </HTMLFlipBook>
+  );
+
   return (
     <div style={overlayStyle} role="dialog" aria-modal="true" aria-label={title}>
       <button onClick={onClose} style={closeBtnStyle} aria-label="बन्द गर्नुहोस्">
@@ -312,46 +357,69 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
         </div>
       ) : (
         <>
-          <div
-            ref={viewportRef}
-            style={{
-              flex: "1 1 auto",
-              minHeight: 0,
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              overflow: "hidden",
-              touchAction: zoom > 1 ? "none" : "pan-y",
-            }}
-          >
+          {isMobile ? (
+            // Mobile: single page, transform-based pinch zoom + pan.
             <div
+              ref={viewportRef}
               style={{
-                transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-                transformOrigin: "center center",
-                transition: "transform 0.05s linear",
-                willChange: "transform",
+                flex: "1 1 auto",
+                minHeight: 0,
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                overflow: "hidden",
+                touchAction: zoom > 1 ? "none" : "pan-y",
               }}
             >
-              {/* @ts-expect-error react-pageflip's typings mark every setting as required */}
-              <HTMLFlipBook
-                ref={flipBook}
-                width={PAGE_WIDTH}
-                height={PAGE_HEIGHT}
-                showCover={true}
-                mobileScrollSupport={true}
-                drawShadow={!isMobile}
-                flippingTime={isMobile ? 450 : 700}
-                maxShadowOpacity={0.5}
-                useMouseEvents={zoom === 1}
-                startPage={0}
-                onInit={handleInit}
-                onFlip={handleFlip}
+              <div
+                style={{
+                  width: spreadWidth,
+                  height: PAGE_HEIGHT,
+                  transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                  transformOrigin: "center center",
+                  transition: "transform 0.05s linear",
+                  willChange: "transform",
+                }}
               >
-                {pageElements}
-              </HTMLFlipBook>
+                {flipBookEl}
+              </div>
             </div>
-          </div>
+          ) : (
+            // Desktop: two-page spread; zoom enlarges layout so the scrollbars
+            // appear and ↑/↓ keys scroll. margin:auto keeps it centred while
+            // remaining fully scrollable when it overflows.
+            <div
+              ref={viewportRef}
+              style={{
+                flex: "1 1 auto",
+                minHeight: 0,
+                width: "100%",
+                display: "flex",
+                overflow: "auto",
+              }}
+            >
+              <div
+                style={{
+                  margin: "auto",
+                  flex: "none",
+                  width: spreadWidth * zoom,
+                  height: PAGE_HEIGHT * zoom,
+                }}
+              >
+                <div
+                  style={{
+                    width: spreadWidth,
+                    height: PAGE_HEIGHT,
+                    transform: `scale(${zoom})`,
+                    transformOrigin: "top left",
+                  }}
+                >
+                  {flipBookEl}
+                </div>
+              </div>
+            </div>
+          )}
 
           <div
             style={{
