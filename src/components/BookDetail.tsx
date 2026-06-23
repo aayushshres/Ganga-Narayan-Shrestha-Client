@@ -7,6 +7,7 @@ import type { PageMeta } from "../hooks/usePageMeta";
 import type { Book } from "../types";
 import BookCover from "./BookCover";
 import { IconArrowLeft, IconBook, IconDownload } from "./icons";
+import ShareButton from "./ShareButton";
 
 const PdfFlipbook = lazy(() => import("./PdfFlipbook"));
 
@@ -108,61 +109,68 @@ export default function BookDetail() {
         {yearDisplay}
       </p>
 
-      {book.pdfUrl && (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: "0.75rem",
-            marginTop: "2rem",
-            flexWrap: "wrap",
-          }}
-        >
-          <button
-            onClick={() => setShowFlipbook(true)}
+      {book.pdfUrl ? (
+        <>
+          <div style={{ display: "flex", justifyContent: "center", marginTop: "1.5rem" }}>
+            <button
+              onClick={() => setShowFlipbook(true)}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                background: "var(--crimson)",
+                color: "white",
+                border: "none",
+                padding: "0.75rem 2rem",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontFamily: "var(--font-ui)",
+                fontWeight: 600,
+                fontSize: "1.05rem",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
+              }}
+            >
+              <IconBook size={18} />
+              {lang === "np" ? "पुस्तक पढ्नुहोस्" : "Read Book"}
+            </button>
+          </div>
+          <div
             style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              background: "var(--crimson)",
-              color: "white",
-              border: "none",
-              padding: "0.75rem 2rem",
-              borderRadius: "6px",
-              cursor: "pointer",
-              fontFamily: "var(--font-ui)",
-              fontWeight: 600,
-              fontSize: "1.05rem",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
+              display: "flex",
+              justifyContent: "center",
+              gap: "0.75rem",
+              marginTop: "1rem",
             }}
           >
-            <IconBook size={18} />
-            {lang === "np" ? "पुस्तक पढ्नुहोस्" : "Read Book"}
-          </button>
-          <button
-            onClick={handleDownload}
-            onMouseEnter={() => setDlHover(true)}
-            onMouseLeave={() => setDlHover(false)}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              background: dlHover ? "#9c7b1f" : "#b8901f",
-              color: "white",
-              border: "none",
-              padding: "0.75rem 1.8rem",
-              borderRadius: "6px",
-              cursor: "pointer",
-              fontFamily: "var(--font-ui)",
-              fontWeight: 600,
-              fontSize: "1.05rem",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
-              transition: "background 0.15s ease",
-            }}
-          >
-            <IconDownload size={18} />
-            {lang === "np" ? "डाउनलोड" : "Download"}
-          </button>
+            <ShareButton title={book.titleNp} lang={lang} iconOnly />
+            <button
+              onClick={handleDownload}
+              onMouseEnter={() => setDlHover(true)}
+              onMouseLeave={() => setDlHover(false)}
+              title={lang === "np" ? "डाउनलोड" : "Download"}
+              aria-label={lang === "np" ? "डाउनलोड" : "Download"}
+              style={{
+                width: "44px",
+                height: "44px",
+                borderRadius: "50%",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: 0,
+                background: dlHover ? "var(--crimson)" : "transparent",
+                color: dlHover ? "white" : "var(--crimson)",
+                border: "1px solid var(--crimson)",
+                cursor: "pointer",
+                transition: "background 0.15s ease, color 0.15s ease",
+              }}
+            >
+              <IconDownload size={18} />
+            </button>
+          </div>
+        </>
+      ) : (
+        <div style={{ display: "flex", justifyContent: "center", marginTop: "2rem" }}>
+          <ShareButton title={book.titleNp} lang={lang} iconOnly />
         </div>
       )}
 

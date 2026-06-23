@@ -57,6 +57,16 @@ export const IconDownload = ({ size }: IconProps) => (
   </svg>
 );
 
+export const IconShare = ({ size }: IconProps) => (
+  <svg {...stroke(size)}>
+    <circle cx="18" cy="5" r="3" />
+    <circle cx="6" cy="12" r="3" />
+    <circle cx="18" cy="19" r="3" />
+    <line x1="8.6" y1="13.5" x2="15.4" y2="17.5" />
+    <line x1="15.4" y1="6.5" x2="8.6" y2="10.5" />
+  </svg>
+);
+
 export const IconBook = ({ size }: IconProps) => (
   <svg {...stroke(size)}>
     <path d="M2 4h6a4 4 0 0 1 4 4v12a3 3 0 0 0-3-3H2z" />

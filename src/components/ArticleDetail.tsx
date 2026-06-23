@@ -9,6 +9,7 @@ import type { PageMeta } from "../hooks/usePageMeta";
 import DOMPurify from "dompurify";
 import type { Article } from "../types";
 import { IconArrowLeft } from "./icons";
+import ShareButton from "./ShareButton";
 
 const SITE_TITLE = "गंगानारायण श्रेष्ठ — Ganga Narayan Shrestha";
 const API_URL = import.meta.env.VITE_API_URL as string;
@@ -21,7 +22,6 @@ export default function ArticleDetail() {
   const [article, setArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [shareFeedback, setShareFeedback] = useState(false);
   const [pageMeta, setPageMeta] = useState<PageMeta | null>(null);
 
   useEffect(() => {
@@ -91,40 +91,16 @@ export default function ArticleDetail() {
         className="detail-page__body"
         dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.content) }}
       />
-      <div style={{ marginTop: "3rem", textAlign: "center", borderTop: "1px solid var(--border-light)", paddingTop: "2rem" }}>
-        <button
-          onClick={async () => {
-            const shareData = {
-              title: article.title,
-              text: article.excerpt,
-              url: window.location.href,
-            };
-            if (navigator.share) {
-              try { await navigator.share(shareData); } catch { /* cancelled */ }
-            } else {
-              await navigator.clipboard.writeText(window.location.href);
-              setShareFeedback(true);
-              setTimeout(() => setShareFeedback(false), 2000);
-            }
-          }}
-          style={{
-            padding: "0.75rem 1.5rem",
-            background: "var(--bg-card)",
-            color: "var(--text-primary)",
-            border: "1px solid var(--border-color)",
-            borderRadius: "4px",
-            cursor: "pointer",
-            fontFamily: "var(--font-display)",
-            fontSize: "1rem",
-            transition: "background 0.2s",
-          }}
-          onMouseOver={(e) => (e.currentTarget.style.background = "var(--border-light)")}
-          onMouseOut={(e) => (e.currentTarget.style.background = "var(--bg-card)")}
-        >
-          {shareFeedback
-            ? (lang === "np" ? "लिंक कपी भयो!" : "Link copied!")
-            : (lang === "np" ? "सेयर गर्नुहोस्" : "Share")}
-        </button>
+      <div
+        style={{
+          marginTop: "3rem",
+          display: "flex",
+          justifyContent: "center",
+          borderTop: "1px solid var(--border-light)",
+          paddingTop: "2rem",
+        }}
+      >
+        <ShareButton title={article.title} text={article.excerpt} lang={lang} iconOnly />
       </div>
     </div>
   );
