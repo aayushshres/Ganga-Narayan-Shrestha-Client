@@ -8,6 +8,7 @@ import { usePageMeta } from "../hooks/usePageMeta";
 import type { PageMeta } from "../hooks/usePageMeta";
 import DOMPurify from "dompurify";
 import type { Article } from "../types";
+import { IconArrowLeft } from "./icons";
 
 const SITE_TITLE = "गंगानारायण श्रेष्ठ — Ganga Narayan Shrestha";
 const API_URL = import.meta.env.VITE_API_URL as string;
@@ -53,7 +54,7 @@ export default function ArticleDetail() {
   if (loading) {
     return (
       <div className="detail-page">
-        <button onClick={() => navigate(-1)} className="detail-page__back">←</button>
+        <button onClick={() => navigate(-1)} className="detail-page__back" aria-label="back"><IconArrowLeft /></button>
         <p style={{ textAlign: "center", padding: "4rem", color: "var(--text-muted)" }}>
           {lang === "np" ? "लोड हुँदैछ..." : "Loading..."}
         </p>
@@ -64,7 +65,7 @@ export default function ArticleDetail() {
   if (notFound || !article) {
     return (
       <div className="detail-page">
-        <button onClick={() => navigate(-1)} className="detail-page__back">←</button>
+        <button onClick={() => navigate(-1)} className="detail-page__back" aria-label="back"><IconArrowLeft /></button>
         <h1 className="detail-page__title">
           {lang === "np" ? "पृष्ठ भेटिएन" : "Page Not Found"}
         </h1>
@@ -76,7 +77,7 @@ export default function ArticleDetail() {
 
   return (
     <div className="detail-page">
-      <button onClick={() => navigate(-1)} className="detail-page__back">←</button>
+      <button onClick={() => navigate(-1)} className="detail-page__back" aria-label="back"><IconArrowLeft /></button>
       <div style={{ textAlign: "center" }}>
         <span className={`latest-card__badge ${categoryColorMap[article.category]}`}>
           {lang === "np" ? categoryLabel.np : categoryLabel.en}

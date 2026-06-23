@@ -13,6 +13,7 @@
   --font-display: 'Playfair Display', 'Georgia', serif;
   --font-body: 'Cormorant Garamond', 'Georgia', serif;
   --font-devanagari: 'Tiro Devanagari', serif;
+  --font-ui: 'Poppins', system-ui, -apple-system, sans-serif;
 }
 
 [data-theme="light"] {

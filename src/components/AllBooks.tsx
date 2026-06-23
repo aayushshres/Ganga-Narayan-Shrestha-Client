@@ -5,6 +5,7 @@ import type { Book, Translatable } from "../types";
 import { t } from "../types";
 import { fetchBooks } from "../api/index";
 import BookCover from "./BookCover";
+import { IconArrowLeft } from "./icons";
 
 const pageTitle: Translatable = { en: "All Published Books", np: "सबै प्रकाशित पुस्तकहरू" };
 
@@ -24,7 +25,7 @@ export default function AllBooks() {
 
   return (
     <div className="detail-page">
-      <button onClick={() => navigate(-1)} className="detail-page__back">←</button>
+      <button onClick={() => navigate(-1)} className="detail-page__back" aria-label="back"><IconArrowLeft /></button>
       <h1 className="detail-page__title">{t(pageTitle, lang)}</h1>
 
       <div className="media-grid latest-list--full">

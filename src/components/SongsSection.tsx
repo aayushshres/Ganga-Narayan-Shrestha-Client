@@ -8,9 +8,10 @@ import type { Song, Translatable } from "../types";
 import { t } from "../types";
 import HorizontalScroll from "./HorizontalScroll";
 import YouTubeModal from "./YouTubeModal";
+import { IconChevronRight, IconPlay } from "./icons";
 
 const songsLabel: Translatable = { en: "Songs", np: "गीतहरू" };
-const viewAllSongs: Translatable = { en: "View All Songs →", np: "सबै गीतहरू →" };
+const viewAllSongs: Translatable = { en: "View All Songs", np: "सबै गीतहरू" };
 
 const SKELETON_COUNT = 4;
 
@@ -77,7 +78,7 @@ export default function SongsSection() {
                           (e.currentTarget as HTMLImageElement).src = thumbFallback;
                         }}
                       />
-                      <span className="media-card__play" aria-hidden="true">▶</span>
+                      <span className="media-card__play" aria-hidden="true"><IconPlay size={20} /></span>
                     </button>
                     <div className="media-card__body">
                       <h4 className="media-card__title">{entry.title}</h4>
@@ -87,8 +88,13 @@ export default function SongsSection() {
               })}
         </HorizontalScroll>
         <div className="row-footer">
-          <Link to="/all-songs" className="row-link">
+          <Link
+            to="/all-songs"
+            className="row-link"
+            style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}
+          >
             {t(viewAllSongs, lang)}
+            <IconChevronRight size={16} />
           </Link>
         </div>
       </div>

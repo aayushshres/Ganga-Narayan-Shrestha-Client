@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import type { ReactNode, MouseEvent as ReactMouseEvent } from "react";
+import { IconChevronLeft, IconChevronRight } from "./icons";
 
 interface HorizontalScrollProps {
   children: ReactNode;
@@ -96,7 +97,7 @@ export default function HorizontalScroll({ children, className = "" }: Horizonta
           onClick={slideLeft}
           aria-label="Scroll left"
         >
-          ‹
+          <IconChevronLeft />
         </button>
       )}
       
@@ -106,7 +107,7 @@ export default function HorizontalScroll({ children, className = "" }: Horizonta
           onClick={slideRight}
           aria-label="Scroll right"
         >
-          ›
+          <IconChevronRight />
         </button>
       )}
 

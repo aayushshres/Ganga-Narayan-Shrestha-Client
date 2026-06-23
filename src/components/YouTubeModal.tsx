@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback } from "react";
 import { extractYouTubeId } from "../utils/youtube";
+import { IconClose } from "./icons";
 
 interface YouTubeModalProps {
   youtubeId: string;
@@ -53,7 +54,7 @@ export default function YouTubeModal({ youtubeId, onClose }: YouTubeModalProps) 
           onClick={onClose}
           aria-label="Close video"
         >
-          ✕
+          <IconClose />
         </button>
         <div className="yt-modal__aspect">
           <iframe

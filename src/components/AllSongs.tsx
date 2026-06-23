@@ -6,6 +6,7 @@ import { t } from "../types";
 import { fetchSongs } from "../api/index";
 import { extractYouTubeId } from "../utils/youtube";
 import YouTubeModal from "./YouTubeModal";
+import { IconArrowLeft, IconPlay } from "./icons";
 
 const pageTitle: Translatable = { en: "All Songs", np: "सबै गीतहरू" };
 
@@ -26,7 +27,7 @@ export default function AllSongs() {
 
   return (
     <div className="detail-page">
-      <button onClick={() => navigate(-1)} className="detail-page__back">←</button>
+      <button onClick={() => navigate(-1)} className="detail-page__back" aria-label="back"><IconArrowLeft /></button>
       <h1 className="detail-page__title">{t(pageTitle, lang)}</h1>
 
       <div className="media-grid latest-list--full">
@@ -57,7 +58,7 @@ export default function AllSongs() {
                     loading="lazy"
                     onError={(e) => { (e.currentTarget as HTMLImageElement).src = thumbFallback; }}
                   />
-                  <span className="media-card__play" aria-hidden="true">▶</span>
+                  <span className="media-card__play" aria-hidden="true"><IconPlay size={20} /></span>
                 </button>
                 <div className="media-card__body">
                   <h4 className="media-card__title">{entry.title}</h4>

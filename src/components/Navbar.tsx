@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAppContext } from "../context/AppContext";
 import { t } from "../types";
 import type { Translatable } from "../types";
+import { IconSun, IconMoon } from "./icons";
 
 const brand: Translatable = {
   en: "GANGA NARAYAN SHRESTHA",
@@ -88,7 +89,7 @@ export default function Navbar() {
           aria-label="Toggle theme"
           onClick={toggleTheme}
         >
-          {theme === "dark" ? "☀️" : "🌙"}
+          {theme === "dark" ? <IconSun size={18} /> : <IconMoon size={18} />}
         </button>
 
         <button

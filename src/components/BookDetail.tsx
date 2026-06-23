@@ -6,6 +6,7 @@ import { usePageMeta } from "../hooks/usePageMeta";
 import type { PageMeta } from "../hooks/usePageMeta";
 import type { Book } from "../types";
 import BookCover from "./BookCover";
+import { IconArrowLeft, IconDownload } from "./icons";
 
 const PdfFlipbook = lazy(() => import("./PdfFlipbook"));
 
@@ -72,7 +73,7 @@ export default function BookDetail() {
   if (loading) {
     return (
       <div className="detail-page">
-        <button onClick={() => navigate(-1)} className="detail-page__back">←</button>
+        <button onClick={() => navigate(-1)} className="detail-page__back" aria-label="back"><IconArrowLeft /></button>
         <p style={{ textAlign: "center", padding: "4rem", color: "var(--text-muted)" }}>
           {lang === "np" ? "लोड हुँदैछ..." : "Loading..."}
         </p>
@@ -83,7 +84,7 @@ export default function BookDetail() {
   if (notFound || !book) {
     return (
       <div className="detail-page">
-        <button onClick={() => navigate(-1)} className="detail-page__back">←</button>
+        <button onClick={() => navigate(-1)} className="detail-page__back" aria-label="back"><IconArrowLeft /></button>
         <h1 className="detail-page__title">
           {lang === "np" ? "पृष्ठ भेटिएन" : "Page Not Found"}
         </h1>
@@ -95,7 +96,7 @@ export default function BookDetail() {
 
   return (
     <div className="detail-page">
-      <button onClick={() => navigate(-1)} className="detail-page__back">←</button>
+      <button onClick={() => navigate(-1)} className="detail-page__back" aria-label="back"><IconArrowLeft /></button>
       <div style={{ display: "flex", justifyContent: "center", marginBottom: "2rem" }}>
         <div style={{ width: "180px", height: "260px" }}>
           <BookCover titleNp={book.titleNp} theme={theme} coverImage={book.coverImage} />
@@ -126,8 +127,9 @@ export default function BookDetail() {
               padding: "0.75rem 2rem",
               borderRadius: "6px",
               cursor: "pointer",
-              fontFamily: "var(--font-display)",
-              fontSize: "1.1rem",
+              fontFamily: "var(--font-ui)",
+              fontWeight: 600,
+              fontSize: "1.05rem",
               boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
             }}
           >
@@ -147,27 +149,14 @@ export default function BookDetail() {
               padding: "0.75rem 1.8rem",
               borderRadius: "6px",
               cursor: "pointer",
-              fontFamily: "var(--font-display)",
-              fontSize: "1.1rem",
+              fontFamily: "var(--font-ui)",
+              fontWeight: 600,
+              fontSize: "1.05rem",
               boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
               transition: "background 0.15s ease",
             }}
           >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
+            <IconDownload size={18} />
             {lang === "np" ? "डाउनलोड" : "Download"}
           </button>
         </div>

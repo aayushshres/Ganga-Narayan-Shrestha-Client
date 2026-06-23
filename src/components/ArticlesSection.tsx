@@ -8,9 +8,10 @@ import { categoryColorMap, categoryLabelMap } from "../utils/article";
 import type { Article, Translatable } from "../types";
 import { t } from "../types";
 import HorizontalScroll from "./HorizontalScroll";
+import { IconChevronRight } from "./icons";
 
 const articlesLabel: Translatable = { en: "Articles & Literature", np: "लेख तथा साहित्य" };
-const viewAllArticles: Translatable = { en: "View All →", np: "सबै हेर्नुहोस् →" };
+const viewAllArticles: Translatable = { en: "View All", np: "सबै हेर्नुहोस्" };
 
 const SKELETON_COUNT = 4;
 
@@ -75,8 +76,13 @@ export default function ArticlesSection() {
             })}
       </HorizontalScroll>
       <div className="row-footer">
-        <Link to="/all-articles" className="row-link">
+        <Link
+          to="/all-articles"
+          className="row-link"
+          style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}
+        >
           {t(viewAllArticles, lang)}
+          <IconChevronRight size={16} />
         </Link>
       </div>
     </div>

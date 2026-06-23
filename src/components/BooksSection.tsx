@@ -7,9 +7,10 @@ import type { Book, Translatable } from "../types";
 import { t } from "../types";
 import HorizontalScroll from "./HorizontalScroll";
 import BookCover from "./BookCover";
+import { IconChevronRight } from "./icons";
 
 const booksLabel: Translatable = { en: "Published Books", np: "प्रकाशित पुस्तकहरू" };
-const viewAllBooks: Translatable = { en: "View All Books →", np: "सबै पुस्तकहरू हेर्नुहोस् →" };
+const viewAllBooks: Translatable = { en: "View All Books", np: "सबै पुस्तकहरू हेर्नुहोस्" };
 
 const SKELETON_COUNT = 4;
 
@@ -67,8 +68,13 @@ export default function BooksSection() {
             })}
       </HorizontalScroll>
       <div className="row-footer">
-        <Link to="/all-books" className="row-link">
+        <Link
+          to="/all-books"
+          className="row-link"
+          style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}
+        >
           {t(viewAllBooks, lang)}
+          <IconChevronRight size={16} />
         </Link>
       </div>
     </div>

@@ -6,6 +6,7 @@ import { t } from "../types";
 import { fetchArticles } from "../api/index";
 import { formatPostDate } from "../utils/formatDate";
 import { categoryColorMap, categoryLabelMap } from "../utils/article";
+import { IconArrowLeft } from "./icons";
 
 const pageTitle: Translatable = { en: "All Articles & Literature", np: "सबै लेख तथा साहित्य" };
 
@@ -74,7 +75,7 @@ export default function AllArticles() {
 
   return (
     <div className="detail-page">
-      <button onClick={() => navigate(-1)} className="detail-page__back">←</button>
+      <button onClick={() => navigate(-1)} className="detail-page__back" aria-label="back"><IconArrowLeft /></button>
       <h1 className="detail-page__title">{t(pageTitle, lang)}</h1>
 
       <div style={{ display: "flex", gap: "1rem", marginBottom: "1.5rem", flexWrap: "wrap", justifyContent: "center" }}>

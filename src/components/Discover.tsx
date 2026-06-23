@@ -8,10 +8,11 @@ import type { Interview, Translatable } from "../types";
 import { t } from "../types";
 import HorizontalScroll from "./HorizontalScroll";
 import YouTubeModal from "./YouTubeModal";
+import { IconChevronRight, IconPlay } from "./icons";
 
 const sectionTitle: Translatable = { en: "Interviews", np: "अन्तर्वार्ताहरू" };
 
-const viewAllInterviews: Translatable = { en: "View All Interviews →", np: "सबै अन्तर्वार्ता →" };
+const viewAllInterviews: Translatable = { en: "View All Interviews", np: "सबै अन्तर्वार्ता" };
 
 export default function Discover() {
   const { lang } = useAppContext();
@@ -66,7 +67,7 @@ export default function Discover() {
                       loading="lazy"
                       onError={(e) => { (e.currentTarget as HTMLImageElement).src = thumbFallback; }}
                     />
-                    <span className="media-card__play" aria-hidden="true">▶</span>
+                    <span className="media-card__play" aria-hidden="true"><IconPlay size={20} /></span>
                   </button>
                   <div className="media-card__body">
                     <h4 className="media-card__title">{entry.title}</h4>
@@ -77,8 +78,13 @@ export default function Discover() {
             })}
           </HorizontalScroll>
           <div className="row-footer">
-            <Link to="/all-interviews" className="row-link">
+            <Link
+              to="/all-interviews"
+              className="row-link"
+              style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}
+            >
               {t(viewAllInterviews, lang)}
+              <IconChevronRight size={16} />
             </Link>
           </div>
         </div>
