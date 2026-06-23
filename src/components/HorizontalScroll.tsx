@@ -8,6 +8,7 @@ interface HorizontalScrollProps {
 }
 
 export default function HorizontalScroll({ children, className = "" }: HorizontalScrollProps) {
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const isDown = useRef(false);
   const startX = useRef(0);
@@ -16,21 +17,35 @@ export default function HorizontalScroll({ children, className = "" }: Horizonta
 
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
+  // Vertical centre for the scroll arrows. When the cards lead with a media
+  // element (thumbnail / cover) we centre on that instead of the whole card,
+  // so the arrows don't drift down into the caption. null ⇒ default 50%.
+  const [arrowTop, setArrowTop] = useState<number | null>(null);
 
-  const checkScroll = () => {
-    if (containerRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = containerRef.current;
-      setCanScrollLeft(scrollLeft > 0);
-      // use a 2px buffer for rounding errors
-      setCanScrollRight(Math.ceil(scrollLeft + clientWidth) < scrollWidth - 2);
+  const update = () => {
+    const el = containerRef.current;
+    const wrap = wrapperRef.current;
+    if (!el) return;
+    const { scrollLeft, scrollWidth, clientWidth } = el;
+    setCanScrollLeft(scrollLeft > 0);
+    // use a 2px buffer for rounding errors
+    setCanScrollRight(Math.ceil(scrollLeft + clientWidth) < scrollWidth - 2);
+
+    const firstCard = el.firstElementChild as HTMLElement | null;
+    const media = firstCard?.firstElementChild as HTMLElement | null;
+    if (wrap && media && media.offsetHeight > 60) {
+      const r = media.getBoundingClientRect();
+      setArrowTop(r.top - wrap.getBoundingClientRect().top + r.height / 2);
+    } else {
+      setArrowTop(null);
     }
   };
 
   useEffect(() => {
-    checkScroll();
+    update();
     const el = containerRef.current;
     if (!el) return;
-    const ro = new ResizeObserver(checkScroll);
+    const ro = new ResizeObserver(update);
     ro.observe(el);
     return () => ro.disconnect();
   }, [children]);
@@ -83,7 +98,7 @@ export default function HorizontalScroll({ children, className = "" }: Horizonta
   };
 
   return (
-    <div className="horizontal-scroll-wrapper">
+    <div className="horizontal-scroll-wrapper" ref={wrapperRef}>
       {canScrollLeft && (
         <div className="scroll-fade-left" />
       )}
@@ -92,20 +107,22 @@ export default function HorizontalScroll({ children, className = "" }: Horizonta
       )}
       
       {canScrollLeft && (
-        <button 
-          className="scroll-arrow scroll-arrow-left" 
+        <button
+          className="scroll-arrow scroll-arrow-left"
           onClick={slideLeft}
           aria-label="Scroll left"
+          style={arrowTop != null ? { top: `${arrowTop}px` } : undefined}
         >
           <IconChevronLeft />
         </button>
       )}
       
       {canScrollRight && (
-        <button 
-          className="scroll-arrow scroll-arrow-right" 
+        <button
+          className="scroll-arrow scroll-arrow-right"
           onClick={slideRight}
           aria-label="Scroll right"
+          style={arrowTop != null ? { top: `${arrowTop}px` } : undefined}
         >
           <IconChevronRight />
         </button>
@@ -118,7 +135,7 @@ export default function HorizontalScroll({ children, className = "" }: Horizonta
         onMouseLeave={stopDragging}
         onMouseUp={stopDragging}
         onMouseMove={onDrag}
-        onScroll={checkScroll}
+        onScroll={update}
       >
         {children}
       </div>

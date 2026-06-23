@@ -6,7 +6,7 @@ import { usePageMeta } from "../hooks/usePageMeta";
 import type { PageMeta } from "../hooks/usePageMeta";
 import type { Book } from "../types";
 import BookCover from "./BookCover";
-import { IconArrowLeft, IconDownload } from "./icons";
+import { IconArrowLeft, IconBook, IconDownload } from "./icons";
 
 const PdfFlipbook = lazy(() => import("./PdfFlipbook"));
 
@@ -121,6 +121,9 @@ export default function BookDetail() {
           <button
             onClick={() => setShowFlipbook(true)}
             style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.5rem",
               background: "var(--crimson)",
               color: "white",
               border: "none",
@@ -133,6 +136,7 @@ export default function BookDetail() {
               boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
             }}
           >
+            <IconBook size={18} />
             {lang === "np" ? "पुस्तक पढ्नुहोस्" : "Read Book"}
           </button>
           <button
