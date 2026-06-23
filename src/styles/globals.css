@@ -549,6 +549,22 @@ body.lang-np .timeline-desc {
   line-height: 1.8;
 }
 
+.show-more-btn {
+  margin-top: 0.4rem;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--crimson);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.show-more-btn:hover {
+  text-decoration: underline;
+}
+
 /* ========================================
    VISION SECTION (red band)
    ======================================== */

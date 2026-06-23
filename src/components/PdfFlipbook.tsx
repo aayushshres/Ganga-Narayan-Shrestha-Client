@@ -189,6 +189,8 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
   // Pan is applied imperatively (no re-render per move) for smoothness.
   const panValRef = useRef({ x: 0, y: 0 });
   const panLayerRef = useRef<HTMLDivElement | null>(null);
+  // True while a touch is actually dragging, so a tap (click) doesn't also flip.
+  const movedRef = useRef(false);
   const [dragX, setDragX] = useState(0);
   const [animating, setAnimating] = useState(true);
   const [showThumbs, setShowThumbs] = useState(false);
@@ -417,6 +419,7 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
         } else {
           g.mode = "swipe";
           g.startX = e.touches[0].clientX;
+          movedRef.current = false;
           setAnimating(false);
         }
       }
@@ -433,7 +436,9 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
           g.startPanY + (e.touches[0].clientY - g.startY),
         );
       } else if (g.mode === "swipe" && e.touches.length === 1) {
-        setDragX(e.touches[0].clientX - g.startX);
+        const dx = e.touches[0].clientX - g.startX;
+        if (Math.abs(dx) > 8) movedRef.current = true;
+        setDragX(dx);
       }
     };
 
@@ -538,6 +543,21 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
     setZoom(zz);
     if (zz === 1) resetPan();
     setShowZoomMenu(false);
+  };
+
+  // Click/tap the left or right half of the page to flip (when not zoomed).
+  const handlePageClick = (e: React.MouseEvent) => {
+    if (stateRef.current.zoom > 1) return; // zoomed → click is for panning
+    if (movedRef.current) {
+      movedRef.current = false; // it was a swipe, not a tap
+      return;
+    }
+    const rect = e.currentTarget.getBoundingClientRect();
+    if (e.clientX - rect.left < rect.width / 2) {
+      goToSpread(stateRef.current.spreadIdx - 1);
+    } else {
+      goToSpread(stateRef.current.spreadIdx + 1);
+    }
   };
 
   // When zoomed, give the page the whole screen and float the controls on top.
@@ -656,6 +676,7 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
             )}
             <div
               ref={viewportRef}
+              onClick={handlePageClick}
               style={{
                 flex: "1 1 auto",
                 minHeight: 0,
@@ -664,7 +685,7 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
                 overflow: "hidden",
                 touchAction: "none",
                 perspective: "2000px",
-                cursor: zoomed ? "grab" : "default",
+                cursor: zoomed ? "grab" : "pointer",
               }}
             >
             <div
@@ -788,18 +809,20 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
               zoomed
                 ? {
                     position: "absolute",
-                    bottom: "1rem",
+                    // Sit above the bottom thumbnail strip when it's open on mobile.
+                    bottom: !wide && showThumbs ? "120px" : "1rem",
                     left: "50%",
                     transform: "translateX(-50%)",
                     display: "flex",
                     alignItems: "center",
-                    gap: "0.6rem",
+                    gap: "0.4rem",
                     color: "white",
-                    flexWrap: "wrap",
+                    flexWrap: "nowrap",
                     justifyContent: "center",
+                    maxWidth: "calc(100vw - 1rem)",
                     zIndex: 1001,
                     background: "rgba(0,0,0,0.55)",
-                    padding: "0.5rem 0.9rem",
+                    padding: "0.45rem 0.6rem",
                     borderRadius: "999px",
                     backdropFilter: "blur(4px)",
                   }
