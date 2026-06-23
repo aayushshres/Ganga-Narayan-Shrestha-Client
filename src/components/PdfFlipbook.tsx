@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import HTMLFlipBook from "react-pageflip";
+import { useCallback, useEffect, useRef, useState } from "react";
 import * as pdfjsLib from "pdfjs-dist";
+import type { PDFDocumentProxy } from "pdfjs-dist";
 
 // Point pdf.js at its worker. Vite bundles the worker via the import.meta.url URL.
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -14,22 +14,11 @@ interface PdfFlipbookProps {
   onClose: () => void;
 }
 
-// Minimal shape of the imperative handle exposed by react-pageflip's ref.
-interface PageFlipApi {
-  flip: (page: number) => void;
-  flipNext: () => void;
-  flipPrev: () => void;
-}
-interface FlipBookRef {
-  pageFlip: () => PageFlipApi;
-}
-
-const PAGE_WIDTH = 420;
-const PAGE_HEIGHT = 560;
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 3;
-// Rasterise each page at a generous resolution so it stays sharp when zoomed in.
-const RENDER_WIDTH = 1200;
+// Rasterise each page wide enough to stay sharp when zoomed in. Only a few
+// pages are ever rendered at once (current ± 1), so this stays cheap.
+const RENDER_WIDTH = 2000;
 
 const clampZoom = (z: number) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, z));
 
@@ -40,219 +29,196 @@ const touchDistance = (touches: TouchList) =>
   );
 
 export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
-  const flipBook = useRef<FlipBookRef | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
-  const [pages, setPages] = useState<string[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loaded, setLoaded] = useState(0);
+  const pdfRef = useRef<PDFDocumentProxy | null>(null);
+  const renderingRef = useRef<Set<number>>(new Set());
+
+  const [numPages, setNumPages] = useState(0);
+  const [current, setCurrent] = useState(0);
+  const [pageUrls, setPageUrls] = useState<Record<number, string>>({});
   const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(0);
 
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [dragX, setDragX] = useState(0);
+  const [animating, setAnimating] = useState(true);
 
-  // Coarse pointer ⇒ touch device: show a single page and use pinch/pan.
-  const [isMobile] = useState(
-    () =>
-      typeof window !== "undefined" &&
-      window.matchMedia("(pointer: coarse)").matches,
-  );
+  // Live mirrors for the native gesture/key listeners.
+  const stateRef = useRef({ numPages, current, zoom, pan });
+  stateRef.current = { numPages, current, zoom, pan };
+  const urlsRef = useRef(pageUrls);
+  urlsRef.current = pageUrls;
 
-  const ready = pages.length > 0 && loaded >= total && total > 0;
+  const goTo = useCallback((n: number) => {
+    const max = stateRef.current.numPages - 1;
+    const next = Math.min(max, Math.max(0, n));
+    setCurrent(next);
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  }, []);
 
-  // Desktop shows a two-page spread; mobile a single page.
-  const spreadWidth = isMobile ? PAGE_WIDTH : PAGE_WIDTH * 2;
+  const renderPage = useCallback(async (n: number) => {
+    if (n < 0 || n >= stateRef.current.numPages) return;
+    if (urlsRef.current[n] || renderingRef.current.has(n) || !pdfRef.current) {
+      return;
+    }
+    renderingRef.current.add(n);
+    try {
+      const page = await pdfRef.current.getPage(n + 1);
+      const base = page.getViewport({ scale: 1 });
+      const scale = Math.min(RENDER_WIDTH / base.width, MAX_ZOOM);
+      const viewport = page.getViewport({ scale });
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("Canvas not supported");
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      await page.render({ canvas, canvasContext: ctx, viewport }).promise;
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+      setPageUrls((prev) => ({ ...prev, [n]: dataUrl }));
+    } catch {
+      /* a single page failing shouldn't kill the whole viewer */
+    } finally {
+      renderingRef.current.delete(n);
+    }
+  }, []);
 
-  // Mirror zoom/pan into refs so native gesture/key listeners read live values.
-  const zoomRef = useRef(zoom);
-  zoomRef.current = zoom;
-  const panRef = useRef(pan);
-  panRef.current = pan;
+  // Load the document once.
+  useEffect(() => {
+    let cancelled = false;
+    const task = pdfjsLib.getDocument({ url });
+    task.promise
+      .then((pdf) => {
+        if (cancelled) return;
+        pdfRef.current = pdf;
+        setNumPages(pdf.numPages);
+      })
+      .catch(() => {
+        if (!cancelled) setError("PDF लोड गर्न सकिएन। कृपया पछि प्रयास गर्नुहोस्।");
+      });
+    return () => {
+      cancelled = true;
+      // Destroying the loading task tears down the document + worker transport.
+      task.destroy();
+      pdfRef.current = null;
+    };
+  }, [url]);
 
-  const setZoomTo = (next: number) => {
-    const z = clampZoom(next);
-    setZoom(z);
-    if (z === 1) setPan({ x: 0, y: 0 });
-  };
+  // Render the current page and its immediate neighbours.
+  useEffect(() => {
+    if (!numPages) return;
+    renderPage(current);
+    renderPage(current + 1);
+    renderPage(current - 1);
+  }, [current, numPages, renderPage]);
 
-  // Stable handlers + page elements so zoom/pan re-renders don't churn
-  // react-pageflip's internals (which would re-run updateFromHtml each frame).
-  const handleInit = useCallback(
-    () => flipBook.current?.pageFlip()?.flip(0),
-    [],
-  );
-  const handleFlip = useCallback(
-    (e: { data: number }) => setCurrentPage(e.data),
-    [],
-  );
-  const pageElements = useMemo(
-    () =>
-      pages.map((src, i) => (
-        <div
-          key={i}
-          style={{
-            background: "white",
-            width: "100%",
-            height: "100%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <img
-            src={src}
-            alt={`${i + 1}`}
-            draggable={false}
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "contain",
-              display: "block",
-            }}
-          />
-        </div>
-      )),
-    [pages],
-  );
-
-  // Keyboard: ← / → flip, ↑ / ↓ scroll (desktop) or pan (mobile), Esc closes.
+  // Keyboard: ← / → flip, ↑ / ↓ pan when zoomed, Esc closes.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         onClose();
         return;
       }
-      if (!ready) return;
       if (e.key === "ArrowLeft") {
-        flipBook.current?.pageFlip()?.flipPrev();
+        goTo(stateRef.current.current - 1);
         e.preventDefault();
       } else if (e.key === "ArrowRight") {
-        flipBook.current?.pageFlip()?.flipNext();
+        goTo(stateRef.current.current + 1);
         e.preventDefault();
       } else if (e.key === "ArrowUp" || e.key === "ArrowDown") {
-        const dir = e.key === "ArrowUp" ? -1 : 1;
-        if (isMobile) {
-          if (zoomRef.current > 1) {
-            setPan((p) => ({ ...p, y: p.y - dir * 40 }));
-          }
-        } else {
-          viewportRef.current?.scrollBy({ top: dir * 60 });
+        if (stateRef.current.zoom > 1) {
+          const d = e.key === "ArrowUp" ? 40 : -40;
+          setPan((p) => ({ ...p, y: p.y + d }));
+          e.preventDefault();
         }
-        e.preventDefault();
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose, ready, isMobile]);
+  }, [onClose, goTo]);
 
-  // Render every PDF page to an offscreen canvas, collect data URLs.
-  useEffect(() => {
-    let cancelled = false;
-    const rendered: string[] = [];
-
-    (async () => {
-      try {
-        const pdf = await pdfjsLib.getDocument({ url }).promise;
-        if (cancelled) return;
-        setTotal(pdf.numPages);
-
-        for (let i = 1; i <= pdf.numPages; i++) {
-          if (cancelled) return;
-          const page = await pdf.getPage(i);
-          const base = page.getViewport({ scale: 1 });
-          // High enough to stay crisp at max zoom, capped so we never produce
-          // absurdly large canvases for small source pages.
-          const scale = Math.min(RENDER_WIDTH / base.width, MAX_ZOOM + 1);
-          const viewport = page.getViewport({ scale });
-          const canvas = document.createElement("canvas");
-          const ctx = canvas.getContext("2d");
-          if (!ctx) throw new Error("Canvas not supported");
-          canvas.width = viewport.width;
-          canvas.height = viewport.height;
-          await page.render({ canvas, canvasContext: ctx, viewport }).promise;
-          rendered.push(canvas.toDataURL("image/jpeg", 0.85));
-          if (cancelled) return;
-          setLoaded(i);
-        }
-
-        if (!cancelled) setPages(rendered);
-      } catch {
-        if (!cancelled) {
-          setError("PDF लोड गर्न सकिएन। कृपया पछि प्रयास गर्नुहोस्।");
-        }
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [url]);
-
-  // Pinch-to-zoom and one-finger pan (mobile only). Listeners run in the
-  // capture phase so they intercept gestures before react-pageflip, while
-  // leaving single-finger swipes at zoom = 1 free for page-flipping.
+  // Touch gestures: horizontal swipe to flip (at zoom 1), pinch to zoom,
+  // one-finger pan while zoomed. No competing library, so this is simple.
   useEffect(() => {
     const el = viewportRef.current;
-    if (!el || !ready || !isMobile) return;
+    if (!el) return;
 
-    const gesture = {
-      mode: "none" as "none" | "pinch" | "pan",
-      startDist: 0,
-      startZoom: 1,
+    const g = {
+      mode: "none" as "none" | "swipe" | "pinch" | "pan",
       startX: 0,
       startY: 0,
+      startDist: 0,
+      startZoom: 1,
       startPanX: 0,
       startPanY: 0,
     };
 
     const onStart = (e: TouchEvent) => {
       if (e.touches.length === 2) {
-        gesture.mode = "pinch";
-        gesture.startDist = touchDistance(e.touches);
-        gesture.startZoom = zoomRef.current;
-        e.preventDefault();
-        e.stopPropagation();
-      } else if (e.touches.length === 1 && zoomRef.current > 1) {
-        gesture.mode = "pan";
-        gesture.startX = e.touches[0].clientX;
-        gesture.startY = e.touches[0].clientY;
-        gesture.startPanX = panRef.current.x;
-        gesture.startPanY = panRef.current.y;
-        e.preventDefault();
-        e.stopPropagation();
+        g.mode = "pinch";
+        g.startDist = touchDistance(e.touches);
+        g.startZoom = stateRef.current.zoom;
+      } else if (e.touches.length === 1) {
+        if (stateRef.current.zoom > 1) {
+          g.mode = "pan";
+          g.startX = e.touches[0].clientX;
+          g.startY = e.touches[0].clientY;
+          g.startPanX = stateRef.current.pan.x;
+          g.startPanY = stateRef.current.pan.y;
+        } else {
+          g.mode = "swipe";
+          g.startX = e.touches[0].clientX;
+          setAnimating(false);
+        }
       }
     };
 
     const onMove = (e: TouchEvent) => {
-      if (gesture.mode === "pinch" && e.touches.length >= 2) {
-        const ratio = touchDistance(e.touches) / gesture.startDist;
-        setZoomTo(gesture.startZoom * ratio);
-        e.preventDefault();
-        e.stopPropagation();
-      } else if (gesture.mode === "pan" && e.touches.length === 1) {
+      if (g.mode === "pinch" && e.touches.length >= 2) {
+        const ratio = touchDistance(e.touches) / g.startDist;
+        const z = clampZoom(g.startZoom * ratio);
+        setZoom(z);
+        if (z === 1) setPan({ x: 0, y: 0 });
+      } else if (g.mode === "pan" && e.touches.length === 1) {
         setPan({
-          x: gesture.startPanX + (e.touches[0].clientX - gesture.startX),
-          y: gesture.startPanY + (e.touches[0].clientY - gesture.startY),
+          x: g.startPanX + (e.touches[0].clientX - g.startX),
+          y: g.startPanY + (e.touches[0].clientY - g.startY),
         });
-        e.preventDefault();
-        e.stopPropagation();
+      } else if (g.mode === "swipe" && e.touches.length === 1) {
+        setDragX(e.touches[0].clientX - g.startX);
       }
     };
 
     const onEnd = (e: TouchEvent) => {
-      if (e.touches.length === 0) gesture.mode = "none";
+      if (g.mode === "swipe") {
+        const width = el.clientWidth || 1;
+        const dx = e.changedTouches[0].clientX - g.startX;
+        setAnimating(true);
+        setDragX(0);
+        if (Math.abs(dx) > width * 0.18) {
+          goTo(stateRef.current.current + (dx < 0 ? 1 : -1));
+        }
+      }
+      if (e.touches.length === 0) g.mode = "none";
     };
 
-    el.addEventListener("touchstart", onStart, { capture: true, passive: false });
-    el.addEventListener("touchmove", onMove, { capture: true, passive: false });
-    el.addEventListener("touchend", onEnd, { capture: true });
+    // touch-action:none (set in CSS) lets us own the gestures without
+    // needing preventDefault on passive listeners.
+    el.addEventListener("touchstart", onStart, { passive: true });
+    el.addEventListener("touchmove", onMove, { passive: true });
+    el.addEventListener("touchend", onEnd, { passive: true });
     return () => {
-      el.removeEventListener("touchstart", onStart, { capture: true });
-      el.removeEventListener("touchmove", onMove, { capture: true });
-      el.removeEventListener("touchend", onEnd, { capture: true });
+      el.removeEventListener("touchstart", onStart);
+      el.removeEventListener("touchmove", onMove);
+      el.removeEventListener("touchend", onEnd);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, isMobile]);
+  }, [goTo]);
+
+  const setZoomTo = (next: number) => {
+    const z = clampZoom(next);
+    setZoom(z);
+    if (z === 1) setPan({ x: 0, y: 0 });
+  };
 
   const overlayStyle: React.CSSProperties = {
     position: "fixed",
@@ -262,7 +228,6 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    justifyContent: "center",
     padding: "1rem",
   };
 
@@ -297,30 +262,6 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
     justifyContent: "center",
   };
 
-  // The flipbook itself — identical for both layouts; only the wrapper differs.
-  const flipBookEl = (
-    // @ts-expect-error react-pageflip's typings mark every setting as required
-    <HTMLFlipBook
-      ref={flipBook}
-      width={PAGE_WIDTH}
-      height={PAGE_HEIGHT}
-      size="fixed"
-      showCover={true}
-      usePortrait={isMobile}
-      mobileScrollSupport={true}
-      drawShadow={true}
-      maxShadowOpacity={0.6}
-      showPageCorners={true}
-      flippingTime={isMobile ? 900 : 1100}
-      useMouseEvents={zoom === 1}
-      startPage={0}
-      onInit={handleInit}
-      onFlip={handleFlip}
-    >
-      {pageElements}
-    </HTMLFlipBook>
-  );
-
   return (
     <div style={overlayStyle} role="dialog" aria-modal="true" aria-label={title}>
       <button onClick={onClose} style={closeBtnStyle} aria-label="बन्द गर्नुहोस्">
@@ -328,98 +269,103 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
       </button>
 
       {error ? (
-        <p style={{ color: "white", textAlign: "center", maxWidth: "420px" }}>
-          {error}
-        </p>
-      ) : !ready ? (
-        <div style={{ color: "white", textAlign: "center", width: "320px" }}>
-          <p style={{ marginBottom: "0.75rem" }}>
-            पृष्ठहरू लोड हुँदैछ... {loaded}/{total || "?"}
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <p style={{ color: "white", textAlign: "center", maxWidth: "420px" }}>
+            {error}
           </p>
+        </div>
+      ) : !numPages ? (
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "white",
+          }}
+        >
+          पृष्ठहरू लोड हुँदैछ...
+        </div>
+      ) : (
+        <>
           <div
+            ref={viewportRef}
             style={{
-              height: "8px",
+              flex: "1 1 auto",
+              minHeight: 0,
               width: "100%",
-              background: "rgba(255,255,255,0.2)",
-              borderRadius: "4px",
+              maxWidth: "900px",
               overflow: "hidden",
+              touchAction: "none",
             }}
           >
             <div
               style={{
+                display: "flex",
                 height: "100%",
-                width: total ? `${(loaded / total) * 100}%` : "0%",
-                background: "var(--crimson)",
-                transition: "width 0.2s ease",
+                transform: `translateX(calc(${-current * 100}% + ${dragX}px))`,
+                transition: animating ? "transform 0.3s ease" : "none",
               }}
-            />
+            >
+              {Array.from({ length: numPages }).map((_, i) => {
+                const near = Math.abs(i - current) <= 1;
+                return (
+                  <div
+                    key={i}
+                    style={{
+                      flex: "0 0 100%",
+                      width: "100%",
+                      height: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        transform:
+                          i === current
+                            ? `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`
+                            : "none",
+                        transition: "transform 0.08s linear",
+                        willChange: "transform",
+                      }}
+                    >
+                      {near && pageUrls[i] ? (
+                        <img
+                          src={pageUrls[i]}
+                          alt={`${i + 1}`}
+                          draggable={false}
+                          style={{
+                            maxWidth: "100%",
+                            maxHeight: "100%",
+                            objectFit: "contain",
+                            boxShadow: "0 6px 24px rgba(0,0,0,0.45)",
+                            userSelect: "none",
+                          }}
+                        />
+                      ) : near ? (
+                        <span style={{ color: "rgba(255,255,255,0.6)" }}>…</span>
+                      ) : null}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      ) : (
-        <>
-          {isMobile ? (
-            // Mobile: single page, transform-based pinch zoom + pan.
-            <div
-              ref={viewportRef}
-              style={{
-                flex: "1 1 auto",
-                minHeight: 0,
-                width: "100%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                overflow: "hidden",
-                touchAction: zoom > 1 ? "none" : "pan-y",
-              }}
-            >
-              <div
-                style={{
-                  width: spreadWidth,
-                  height: PAGE_HEIGHT,
-                  transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-                  transformOrigin: "center center",
-                  transition: "transform 0.05s linear",
-                  willChange: "transform",
-                }}
-              >
-                {flipBookEl}
-              </div>
-            </div>
-          ) : (
-            // Desktop: two-page spread; zoom enlarges layout so the scrollbars
-            // appear and ↑/↓ keys scroll. margin:auto keeps it centred while
-            // remaining fully scrollable when it overflows.
-            <div
-              ref={viewportRef}
-              style={{
-                flex: "1 1 auto",
-                minHeight: 0,
-                width: "100%",
-                display: "flex",
-                overflow: "auto",
-              }}
-            >
-              <div
-                style={{
-                  margin: "auto",
-                  flex: "none",
-                  width: spreadWidth * zoom,
-                  height: PAGE_HEIGHT * zoom,
-                }}
-              >
-                <div
-                  style={{
-                    width: spreadWidth,
-                    height: PAGE_HEIGHT,
-                    transform: `scale(${zoom})`,
-                    transformOrigin: "top left",
-                  }}
-                >
-                  {flipBookEl}
-                </div>
-              </div>
-            </div>
-          )}
 
           <div
             style={{
@@ -442,18 +388,23 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
               −
             </button>
             <button
-              style={controlBtnStyle}
-              onClick={() => flipBook.current?.pageFlip()?.flipPrev()}
+              style={{ ...controlBtnStyle, opacity: current === 0 ? 0.4 : 1 }}
+              onClick={() => goTo(current - 1)}
+              disabled={current === 0}
               aria-label="अघिल्लो पृष्ठ"
             >
               ←
             </button>
             <span style={{ minWidth: "72px", textAlign: "center" }}>
-              {currentPage + 1} / {pages.length}
+              {current + 1} / {numPages}
             </span>
             <button
-              style={controlBtnStyle}
-              onClick={() => flipBook.current?.pageFlip()?.flipNext()}
+              style={{
+                ...controlBtnStyle,
+                opacity: current >= numPages - 1 ? 0.4 : 1,
+              }}
+              onClick={() => goTo(current + 1)}
+              disabled={current >= numPages - 1}
               aria-label="अर्को पृष्ठ"
             >
               →
