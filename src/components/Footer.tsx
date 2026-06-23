@@ -46,7 +46,7 @@ export default function Footer() {
               aria-label={PLATFORM_LABELS[link.platform]}
               title={PLATFORM_LABELS[link.platform]}
             >
-              <SocialIcon platform={link.platform} size={22} />
+              <SocialIcon platform={link.platform} size={20} />
             </a>
           ))}
         </div>

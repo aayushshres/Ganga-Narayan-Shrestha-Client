@@ -5,9 +5,13 @@ interface Props {
   size?: number;
 }
 
-// Brand glyphs (filled) for the social platforms; email & website use simple
-// line icons. All inherit colour via currentColor.
-const BRAND_PATHS: Partial<Record<SocialPlatform, string>> = {
+// Solid (filled) glyphs for every platform so the set is visually uniform.
+// All inherit colour via currentColor.
+const PATHS: Record<SocialPlatform, string> = {
+  email:
+    "M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z",
+  website:
+    "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z",
   facebook:
     "M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z",
   instagram:
@@ -24,40 +28,9 @@ const BRAND_PATHS: Partial<Record<SocialPlatform, string>> = {
 };
 
 export default function SocialIcon({ platform, size = 20 }: Props) {
-  const stroke = {
-    width: size,
-    height: size,
-    viewBox: "0 0 24 24",
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: 2,
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-  };
-
-  if (platform === "email") {
-    return (
-      <svg {...stroke}>
-        <rect x="2" y="4" width="20" height="16" rx="2" />
-        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-      </svg>
-    );
-  }
-  if (platform === "website") {
-    return (
-      <svg {...stroke}>
-        <circle cx="12" cy="12" r="10" />
-        <path d="M2 12h20" />
-        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-      </svg>
-    );
-  }
-
-  const path = BRAND_PATHS[platform];
-  if (!path) return null;
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
-      <path d={path} />
+      <path d={PATHS[platform]} />
     </svg>
   );
 }
