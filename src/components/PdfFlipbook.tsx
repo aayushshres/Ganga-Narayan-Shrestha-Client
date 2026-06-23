@@ -490,6 +490,46 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
     livePan(panValRef.current.x, panValRef.current.y);
   }, [zoom, livePan]);
 
+  // Desktop: click-and-drag to pan while zoomed. Filtered to mouse pointers so
+  // it never double-handles touch (which is covered by the touch listeners).
+  useEffect(() => {
+    const el = viewportRef.current;
+    if (!el) return;
+    let dragging = false;
+    let sx = 0;
+    let sy = 0;
+    let spx = 0;
+    let spy = 0;
+    const onDown = (e: PointerEvent) => {
+      if (e.pointerType !== "mouse" || e.button !== 0) return;
+      if (stateRef.current.zoom <= 1) return;
+      dragging = true;
+      sx = e.clientX;
+      sy = e.clientY;
+      spx = panValRef.current.x;
+      spy = panValRef.current.y;
+      el.style.cursor = "grabbing";
+      e.preventDefault();
+    };
+    const onMove = (e: PointerEvent) => {
+      if (!dragging) return;
+      livePan(spx + (e.clientX - sx), spy + (e.clientY - sy));
+    };
+    const onUp = () => {
+      if (!dragging) return;
+      dragging = false;
+      el.style.cursor = stateRef.current.zoom > 1 ? "grab" : "default";
+    };
+    el.addEventListener("pointerdown", onDown);
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    return () => {
+      el.removeEventListener("pointerdown", onDown);
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    };
+  }, [numPages, livePan]);
+
   // System font so the page-number input and the "/ N" label match.
   const numFont = "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
 
@@ -624,6 +664,7 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
                 overflow: "hidden",
                 touchAction: "none",
                 perspective: "2000px",
+                cursor: zoomed ? "grab" : "default",
               }}
             >
             <div
