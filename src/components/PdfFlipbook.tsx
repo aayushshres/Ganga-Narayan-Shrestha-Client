@@ -181,8 +181,9 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
   );
   // null = follow screen size; true/false = explicit user choice via the toggle.
   const [manualTwoPage, setManualTwoPage] = useState<boolean | null>(null);
-  const twoPage = manualTwoPage ?? autoWide; // pages per spread
-  const wide = autoWide; // real screen width → thumbnail placement
+  const wide = autoWide; // real screen width → thumbnail placement + page toggle
+  // Small screens are always single-page (the toggle is hidden there).
+  const twoPage = wide ? (manualTwoPage ?? autoWide) : false;
 
   const [spreadIdx, setSpreadIdx] = useState(0);
   const [zoom, setZoom] = useState(1);
@@ -901,14 +902,16 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
             >
               <IconChevronRight />
             </button>
-            <button
-              style={controlBtnStyle}
-              onClick={() => setManualTwoPage(!twoPage)}
-              aria-label="एक वा दुई पाना"
-              title={twoPage ? "एक पाना देखाउनुहोस्" : "दुई पाना देखाउनुहोस्"}
-            >
-              {twoPage ? <IconOnePage /> : <IconTwoPage />}
-            </button>
+            {wide && (
+              <button
+                style={controlBtnStyle}
+                onClick={() => setManualTwoPage(!twoPage)}
+                aria-label="एक वा दुई पाना"
+                title={twoPage ? "एक पाना देखाउनुहोस्" : "दुई पाना देखाउनुहोस्"}
+              >
+                {twoPage ? <IconOnePage /> : <IconTwoPage />}
+              </button>
+            )}
             {thumbsAvailable && (
               <button
                 style={{
