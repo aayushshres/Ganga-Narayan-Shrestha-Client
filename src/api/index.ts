@@ -235,6 +235,16 @@ export function uploadImage(formData: FormData): Promise<{ url: string }> {
   });
 }
 
+// Upload a cover image to the server (stored in R2), returns its public URL.
+export function uploadCoverImage(file: File): Promise<{ url: string }> {
+  const fd = new FormData();
+  fd.append("image", file);
+  return request<{ url: string }>(`${BASE}/images`, {
+    method: "POST",
+    body: fd,
+  });
+}
+
 // ── Settings (social links) ───────────────────────────────
 export function fetchSettings(): Promise<{ socials: SocialLink[] }> {
   return request<{ socials: SocialLink[] }>(`${BASE}/settings`);

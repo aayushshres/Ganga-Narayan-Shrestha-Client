@@ -8,11 +8,11 @@ import {
   reorderBooks,
   uploadBookPdf,
   deleteBookPdf,
+  uploadCoverImage,
 } from "../api/index";
 import type { Book, BookFormData } from "../types";
 import { inputStyle, labelStyle } from "../styles/admin";
 import { ExpandableCell } from "./ExpandableCell";
-import { uploadToImgbb } from "../lib/imgbb";
 
 const coverPreviewStyle: React.CSSProperties = {
   width: "100px",
@@ -83,7 +83,7 @@ export default function BooksPage() {
       let coverImage: string | undefined;
       if (coverFile) {
         setIsUploading(true);
-        coverImage = await uploadToImgbb(coverFile);
+        coverImage = (await uploadCoverImage(coverFile)).url;
         setIsUploading(false);
       }
 
@@ -182,7 +182,7 @@ export default function BooksPage() {
     try {
       let updatedData = { ...editData };
       if (editCoverFile) {
-        const coverImage = await uploadToImgbb(editCoverFile);
+        const coverImage = (await uploadCoverImage(editCoverFile)).url;
         updatedData = { ...updatedData, coverImage };
       }
       let updated = await updateBook(editId, updatedData);
