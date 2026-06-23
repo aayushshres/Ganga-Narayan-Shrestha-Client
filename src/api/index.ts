@@ -7,6 +7,7 @@ import type {
   InterviewFormData,
   Song,
   SongFormData,
+  SocialLink,
 } from "../types";
 
 const BASE = import.meta.env.VITE_API_URL || "/api";
@@ -231,5 +232,19 @@ export function uploadImage(formData: FormData): Promise<{ url: string }> {
   return request<{ url: string }>(`${BASE}/upload/image`, {
     method: "POST",
     body: formData,
+  });
+}
+
+// ── Settings (social links) ───────────────────────────────
+export function fetchSettings(): Promise<{ socials: SocialLink[] }> {
+  return request<{ socials: SocialLink[] }>(`${BASE}/settings`);
+}
+
+export function updateSocials(
+  socials: SocialLink[],
+): Promise<{ socials: SocialLink[] }> {
+  return request<{ socials: SocialLink[] }>(`${BASE}/settings/socials`, {
+    method: "PUT",
+    ...json({ socials }),
   });
 }

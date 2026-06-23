@@ -65,6 +65,23 @@ export interface Song {
   order: number;
 }
 
+// ── Settings / social links ───────────────────────────────
+export type SocialPlatform =
+  | "email"
+  | "facebook"
+  | "instagram"
+  | "x"
+  | "youtube"
+  | "tiktok"
+  | "linkedin"
+  | "whatsapp"
+  | "website";
+
+export interface SocialLink {
+  platform: SocialPlatform;
+  url: string;
+}
+
 export type ArticleFormData = Omit<Article, "_id" | "createdAt" | "updatedAt">;
 export type BookFormData = Omit<Book, "_id">;
 export type InterviewFormData = Omit<Interview, "_id">;

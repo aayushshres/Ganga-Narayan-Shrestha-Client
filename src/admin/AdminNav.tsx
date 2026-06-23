@@ -6,6 +6,7 @@ const navLinks = [
   { path: '/admin/books', label: 'पुस्तकहरू' },
   { path: '/admin/interviews', label: 'अन्तर्वार्ताहरू' },
   { path: '/admin/songs', label: 'गीतहरू' },
+  { path: '/admin/settings', label: 'सेटिङ' },
 ];
 
 export default function AdminNav() {

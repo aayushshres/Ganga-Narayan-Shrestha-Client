@@ -23,6 +23,7 @@ import ArticlesPage from "./admin/ArticlesPage";
 import BooksPage from "./admin/BooksPage";
 import InterviewsPage from "./admin/InterviewsPage";
 import SongsPage from "./admin/SongsPage";
+import SettingsPage from "./admin/SettingsPage";
 
 function HomePage() {
   return (
@@ -77,6 +78,7 @@ function AppInner() {
           <Route path="books" element={<BooksPage />} />
           <Route path="interviews" element={<InterviewsPage />} />
           <Route path="songs" element={<SongsPage />} />
+          <Route path="settings" element={<SettingsPage />} />
         </Route>
       </Routes>
     </>
