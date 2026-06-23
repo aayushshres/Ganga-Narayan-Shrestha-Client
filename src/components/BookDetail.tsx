@@ -47,7 +47,9 @@ export default function BookDetail() {
     fetch(`${API_URL}/meta/book/${id}`)
       .then((r) => r.json())
       .then((data: PageMeta) => setPageMeta(data))
-      .catch(() => { /* non-critical */ });
+      .catch(() => {
+        /* non-critical */
+      });
   }, [id, book]);
 
   usePageMeta(pageMeta);
@@ -74,8 +76,20 @@ export default function BookDetail() {
   if (loading) {
     return (
       <div className="detail-page">
-        <button onClick={() => navigate(-1)} className="detail-page__back" aria-label="back"><IconArrowLeft /></button>
-        <p style={{ textAlign: "center", padding: "4rem", color: "var(--text-muted)" }}>
+        <button
+          onClick={() => navigate(-1)}
+          className="detail-page__back"
+          aria-label="back"
+        >
+          <IconArrowLeft />
+        </button>
+        <p
+          style={{
+            textAlign: "center",
+            padding: "4rem",
+            color: "var(--text-muted)",
+          }}
+        >
           {lang === "np" ? "लोड हुँदैछ..." : "Loading..."}
         </p>
       </div>
@@ -85,7 +99,13 @@ export default function BookDetail() {
   if (notFound || !book) {
     return (
       <div className="detail-page">
-        <button onClick={() => navigate(-1)} className="detail-page__back" aria-label="back"><IconArrowLeft /></button>
+        <button
+          onClick={() => navigate(-1)}
+          className="detail-page__back"
+          aria-label="back"
+        >
+          <IconArrowLeft />
+        </button>
         <h1 className="detail-page__title">
           {lang === "np" ? "पृष्ठ भेटिएन" : "Page Not Found"}
         </h1>
@@ -93,25 +113,54 @@ export default function BookDetail() {
     );
   }
 
-  const yearDisplay = lang === "np" ? `${book.yearBs} बि.सं.` : `${book.yearBs} BS`;
+  const yearDisplay =
+    lang === "np" ? `${book.yearBs} वि.सं.` : `${book.yearBs} BS`;
 
   return (
     <div className="detail-page">
-      <button onClick={() => navigate(-1)} className="detail-page__back" aria-label="back"><IconArrowLeft /></button>
-      <div style={{ display: "flex", justifyContent: "center", marginBottom: "2rem" }}>
+      <button
+        onClick={() => navigate(-1)}
+        className="detail-page__back"
+        aria-label="back"
+      >
+        <IconArrowLeft />
+      </button>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          marginBottom: "2rem",
+        }}
+      >
         <div style={{ width: "180px", height: "260px" }}>
-          <BookCover titleNp={book.titleNp} theme={theme} coverImage={book.coverImage} />
+          <BookCover
+            titleNp={book.titleNp}
+            theme={theme}
+            coverImage={book.coverImage}
+          />
         </div>
       </div>
       <h1 className="detail-page__title">{book.titleNp}</h1>
       <p className="detail-page__subtitle">{book.typeEn}</p>
-      <p style={{ textAlign: "center", marginTop: "1rem", color: "var(--text-muted)" }}>
+      <p
+        style={{
+          textAlign: "center",
+          marginTop: "1rem",
+          color: "var(--text-muted)",
+        }}
+      >
         {yearDisplay}
       </p>
 
       {book.pdfUrl ? (
         <>
-          <div style={{ display: "flex", justifyContent: "center", marginTop: "1.5rem" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              marginTop: "1.5rem",
+            }}
+          >
             <button
               onClick={() => setShowFlipbook(true)}
               style={{
@@ -169,7 +218,13 @@ export default function BookDetail() {
           </div>
         </>
       ) : (
-        <div style={{ display: "flex", justifyContent: "center", marginTop: "2rem" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: "2rem",
+          }}
+        >
           <ShareButton title={book.titleNp} lang={lang} iconOnly />
         </div>
       )}

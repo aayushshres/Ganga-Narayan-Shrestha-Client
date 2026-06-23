@@ -131,7 +131,6 @@ export default function BooksPage() {
     }
   };
 
-
   const startEdit = (b: Book) => {
     setEditId(b._id);
     setEditData({
@@ -235,7 +234,7 @@ export default function BooksPage() {
           />
         </div>
         <div style={{ gridColumn: "1 / -1" }}>
-          <label style={labelStyle}>वर्ष (बि.सं.)</label>
+          <label style={labelStyle}>वर्ष (वि.सं.)</label>
           <input
             type="text"
             style={inputStyle}
@@ -321,316 +320,353 @@ export default function BooksPage() {
         <p>लोड हुँदैछ...</p>
       ) : (
         <div className="admin-table-wrap">
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            background: "var(--bg-card)",
-            border: "1px solid var(--border-color)",
-            borderRadius: "8px",
-            overflow: "hidden",
-          }}
-        >
-          <thead
-            style={{ background: "var(--bg-secondary)", textAlign: "left" }}
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              background: "var(--bg-card)",
+              border: "1px solid var(--border-color)",
+              borderRadius: "8px",
+              overflow: "hidden",
+            }}
           >
-            <tr>
-              <th
-                style={{
-                  padding: "1rem",
-                  borderBottom: "1px solid var(--border-color)",
-                }}
-              >
-                शीर्षक
-              </th>
-              <th
-                style={{
-                  padding: "1rem",
-                  borderBottom: "1px solid var(--border-color)",
-                }}
-              >
-                प्रकार
-              </th>
-              <th
-                style={{
-                  padding: "1rem",
-                  borderBottom: "1px solid var(--border-color)",
-                  textAlign: "right",
-                }}
-              >
-                कार्यहरू
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {books.map((b, index) =>
-              editId === b._id ? (
-                <tr key={b._id}>
-                  <td
-                    colSpan={3}
-                    style={{
-                      padding: "1rem",
-                      borderBottom: "1px solid var(--border-light)",
-                    }}
-                  >
-                    <div className="admin-form-grid">
-                      <div style={{ gridColumn: "1 / -1" }}>
-                        <label style={labelStyle}>शीर्षक</label>
-                        <input
-                          type="text"
-                          style={inputStyle}
-                          value={editData.titleNp ?? ""}
-                          onChange={(e) =>
-                            setEditData({
-                              ...editData,
-                              titleNp: e.target.value,
-                            })
-                          }
-                          placeholder="e.g. मेरो यात्रा"
-                        />
-                      </div>
-                      <div style={{ gridColumn: "1 / -1" }}>
-                        <label style={labelStyle}>प्रकार</label>
-                        <input
-                          type="text"
-                          style={inputStyle}
-                          value={editData.typeEn ?? ""}
-                          onChange={(e) =>
-                            setEditData({ ...editData, typeEn: e.target.value })
-                          }
-                          placeholder="e.g. Poetry Collection"
-                        />
-                      </div>
-                      <div style={{ gridColumn: "1 / -1" }}>
-                        <label style={labelStyle}>वर्ष (बि.सं.)</label>
-                        <input
-                          type="text"
-                          style={inputStyle}
-                          value={editData.yearBs ?? ""}
-                          onChange={(e) =>
-                            setEditData({ ...editData, yearBs: e.target.value })
-                          }
-                          placeholder="e.g. २०८०"
-                        />
-                      </div>
-                      <div style={{ gridColumn: "1 / -1" }}>
-                        <label style={labelStyle}>पुस्तक कभर (ऐच्छिक)</label>
-                        <input
-                          type="file"
-                          accept="image/jpeg,image/png,image/webp"
-                          onChange={handleEditCoverChange}
-                          style={{ ...inputStyle, cursor: "pointer" }}
-                        />
-                        {editCoverPreview && (
-                          <img
-                            src={editCoverPreview}
-                            alt="Cover preview"
-                            style={coverPreviewStyle}
+            <thead
+              style={{ background: "var(--bg-secondary)", textAlign: "left" }}
+            >
+              <tr>
+                <th
+                  style={{
+                    padding: "1rem",
+                    borderBottom: "1px solid var(--border-color)",
+                  }}
+                >
+                  शीर्षक
+                </th>
+                <th
+                  style={{
+                    padding: "1rem",
+                    borderBottom: "1px solid var(--border-color)",
+                  }}
+                >
+                  प्रकार
+                </th>
+                <th
+                  style={{
+                    padding: "1rem",
+                    borderBottom: "1px solid var(--border-color)",
+                    textAlign: "right",
+                  }}
+                >
+                  कार्यहरू
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {books.map((b, index) =>
+                editId === b._id ? (
+                  <tr key={b._id}>
+                    <td
+                      colSpan={3}
+                      style={{
+                        padding: "1rem",
+                        borderBottom: "1px solid var(--border-light)",
+                      }}
+                    >
+                      <div className="admin-form-grid">
+                        <div style={{ gridColumn: "1 / -1" }}>
+                          <label style={labelStyle}>शीर्षक</label>
+                          <input
+                            type="text"
+                            style={inputStyle}
+                            value={editData.titleNp ?? ""}
+                            onChange={(e) =>
+                              setEditData({
+                                ...editData,
+                                titleNp: e.target.value,
+                              })
+                            }
+                            placeholder="e.g. मेरो यात्रा"
                           />
-                        )}
-                      </div>
-                      <div style={{ gridColumn: "1 / -1" }}>
-                        <label style={labelStyle}>पुस्तक PDF</label>
-                        {editData.pdfUrl ? (
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "0.75rem",
-                              marginBottom: "0.5rem",
-                            }}
-                          >
-                            <span style={{ color: "green" }}>📄 PDF अपलोड भएको छ</span>
-                            <button
-                              type="button"
-                              onClick={handleRemovePdf}
-                              disabled={isRemovingPdf}
+                        </div>
+                        <div style={{ gridColumn: "1 / -1" }}>
+                          <label style={labelStyle}>प्रकार</label>
+                          <input
+                            type="text"
+                            style={inputStyle}
+                            value={editData.typeEn ?? ""}
+                            onChange={(e) =>
+                              setEditData({
+                                ...editData,
+                                typeEn: e.target.value,
+                              })
+                            }
+                            placeholder="e.g. Poetry Collection"
+                          />
+                        </div>
+                        <div style={{ gridColumn: "1 / -1" }}>
+                          <label style={labelStyle}>वर्ष (वि.सं.)</label>
+                          <input
+                            type="text"
+                            style={inputStyle}
+                            value={editData.yearBs ?? ""}
+                            onChange={(e) =>
+                              setEditData({
+                                ...editData,
+                                yearBs: e.target.value,
+                              })
+                            }
+                            placeholder="e.g. २०८०"
+                          />
+                        </div>
+                        <div style={{ gridColumn: "1 / -1" }}>
+                          <label style={labelStyle}>पुस्तक कभर (ऐच्छिक)</label>
+                          <input
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp"
+                            onChange={handleEditCoverChange}
+                            style={{ ...inputStyle, cursor: "pointer" }}
+                          />
+                          {editCoverPreview && (
+                            <img
+                              src={editCoverPreview}
+                              alt="Cover preview"
+                              style={coverPreviewStyle}
+                            />
+                          )}
+                        </div>
+                        <div style={{ gridColumn: "1 / -1" }}>
+                          <label style={labelStyle}>पुस्तक PDF</label>
+                          {editData.pdfUrl ? (
+                            <div
                               style={{
-                                padding: "0.3rem 0.8rem",
-                                background: "#D32F2F",
-                                color: "white",
-                                border: "none",
-                                borderRadius: "4px",
-                                cursor: isRemovingPdf ? "not-allowed" : "pointer",
-                                fontSize: "0.85rem",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "0.75rem",
+                                marginBottom: "0.5rem",
                               }}
                             >
-                              {isRemovingPdf ? "हट्दैछ..." : "PDF हटाउनुहोस्"}
-                            </button>
-                          </div>
-                        ) : (
-                          <p style={{ color: "var(--text-muted)", marginBottom: "0.5rem" }}>
-                            कुनै PDF छैन
-                          </p>
-                        )}
-                        <input
-                          type="file"
-                          accept=".pdf,application/pdf"
-                          onChange={(e) => setEditPdfFile(e.target.files?.[0] ?? null)}
-                          style={{ ...inputStyle, cursor: "pointer" }}
-                        />
-                        {editPdfFile && (
-                          <p style={{ marginTop: "0.5rem", color: "var(--text-muted)" }}>
-                            📄 {editPdfFile.name}{" "}
-                            {editData.pdfUrl ? "(प्रतिस्थापन गरिनेछ)" : ""}
-                          </p>
-                        )}
-                        {pdfStatus && (
-                          <p style={{ marginTop: "0.5rem", color: "var(--text-muted)" }}>
-                            {pdfStatus}
-                          </p>
-                        )}
+                              <span style={{ color: "green" }}>
+                                📄 PDF अपलोड भएको छ
+                              </span>
+                              <button
+                                type="button"
+                                onClick={handleRemovePdf}
+                                disabled={isRemovingPdf}
+                                style={{
+                                  padding: "0.3rem 0.8rem",
+                                  background: "#D32F2F",
+                                  color: "white",
+                                  border: "none",
+                                  borderRadius: "4px",
+                                  cursor: isRemovingPdf
+                                    ? "not-allowed"
+                                    : "pointer",
+                                  fontSize: "0.85rem",
+                                }}
+                              >
+                                {isRemovingPdf ? "हट्दैछ..." : "PDF हटाउनुहोस्"}
+                              </button>
+                            </div>
+                          ) : (
+                            <p
+                              style={{
+                                color: "var(--text-muted)",
+                                marginBottom: "0.5rem",
+                              }}
+                            >
+                              कुनै PDF छैन
+                            </p>
+                          )}
+                          <input
+                            type="file"
+                            accept=".pdf,application/pdf"
+                            onChange={(e) =>
+                              setEditPdfFile(e.target.files?.[0] ?? null)
+                            }
+                            style={{ ...inputStyle, cursor: "pointer" }}
+                          />
+                          {editPdfFile && (
+                            <p
+                              style={{
+                                marginTop: "0.5rem",
+                                color: "var(--text-muted)",
+                              }}
+                            >
+                              📄 {editPdfFile.name}{" "}
+                              {editData.pdfUrl ? "(प्रतिस्थापन गरिनेछ)" : ""}
+                            </p>
+                          )}
+                          {pdfStatus && (
+                            <p
+                              style={{
+                                marginTop: "0.5rem",
+                                color: "var(--text-muted)",
+                              }}
+                            >
+                              {pdfStatus}
+                            </p>
+                          )}
+                        </div>
+                        <div
+                          style={{
+                            gridColumn: "1 / -1",
+                            display: "flex",
+                            gap: "0.5rem",
+                          }}
+                        >
+                          <button
+                            onClick={handleSave}
+                            disabled={isSaving}
+                            style={{
+                              padding: "0.5rem 1.2rem",
+                              background: "var(--crimson)",
+                              color: "white",
+                              border: "none",
+                              borderRadius: "4px",
+                              cursor: isSaving ? "not-allowed" : "pointer",
+                            }}
+                          >
+                            {isSaving ? "..." : "सुरक्षित गर्नुहोस्"}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setEditId(null);
+                              setEditCoverFile(null);
+                              setEditCoverPreview(null);
+                              setEditPdfFile(null);
+                            }}
+                            style={{
+                              padding: "0.5rem 1.2rem",
+                              background: "var(--bg-secondary)",
+                              color: "var(--text-primary)",
+                              border: "1px solid var(--border-color)",
+                              borderRadius: "4px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            रद्द गर्नुहोस्
+                          </button>
+                        </div>
                       </div>
-                      <div
+                    </td>
+                  </tr>
+                ) : (
+                  <tr key={b._id}>
+                    <td
+                      style={{
+                        padding: "1rem",
+                        borderBottom: "1px solid var(--border-light)",
+                        fontFamily: "var(--font-devanagari)",
+                      }}
+                    >
+                      <ExpandableCell text={b.titleNp} />
+                    </td>
+                    <td
+                      style={{
+                        padding: "1rem",
+                        borderBottom: "1px solid var(--border-light)",
+                      }}
+                    >
+                      <ExpandableCell text={b.typeEn} />
+                    </td>
+                    <td
+                      style={{
+                        padding: "1rem",
+                        borderBottom: "1px solid var(--border-light)",
+                        textAlign: "right",
+                        display: "flex",
+                        gap: "0.5rem",
+                        justifyContent: "flex-end",
+                      }}
+                    >
+                      <button
+                        onClick={() => handleMove(index, "up")}
+                        disabled={index === 0 || isReordering || !!editId}
+                        title="माथि सार्नुहोस्"
                         style={{
-                          gridColumn: "1 / -1",
-                          display: "flex",
-                          gap: "0.5rem",
+                          padding: "0.4rem 0.6rem",
+                          background: "var(--bg-secondary)",
+                          color: "var(--text-primary)",
+                          border: "1px solid var(--border-color)",
+                          borderRadius: "4px",
+                          cursor:
+                            index === 0 || isReordering || !!editId
+                              ? "not-allowed"
+                              : "pointer",
+                          fontSize: "0.9rem",
+                          opacity: index === 0 ? 0.35 : 1,
                         }}
                       >
-                        <button
-                          onClick={handleSave}
-                          disabled={isSaving}
-                          style={{
-                            padding: "0.5rem 1.2rem",
-                            background: "var(--crimson)",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "4px",
-                            cursor: isSaving ? "not-allowed" : "pointer",
-                          }}
-                        >
-                          {isSaving ? "..." : "सुरक्षित गर्नुहोस्"}
-                        </button>
-                        <button
-                          onClick={() => {
-                            setEditId(null);
-                            setEditCoverFile(null);
-                            setEditCoverPreview(null);
-                            setEditPdfFile(null);
-                          }}
-                          style={{
-                            padding: "0.5rem 1.2rem",
-                            background: "var(--bg-secondary)",
-                            color: "var(--text-primary)",
-                            border: "1px solid var(--border-color)",
-                            borderRadius: "4px",
-                            cursor: "pointer",
-                          }}
-                        >
-                          रद्द गर्नुहोस्
-                        </button>
-                      </div>
-                    </div>
+                        ↑
+                      </button>
+                      <button
+                        onClick={() => handleMove(index, "down")}
+                        disabled={
+                          index === books.length - 1 || isReordering || !!editId
+                        }
+                        title="तल सार्नुहोस्"
+                        style={{
+                          padding: "0.4rem 0.6rem",
+                          background: "var(--bg-secondary)",
+                          color: "var(--text-primary)",
+                          border: "1px solid var(--border-color)",
+                          borderRadius: "4px",
+                          cursor:
+                            index === books.length - 1 ||
+                            isReordering ||
+                            !!editId
+                              ? "not-allowed"
+                              : "pointer",
+                          fontSize: "0.9rem",
+                          opacity: index === books.length - 1 ? 0.35 : 1,
+                        }}
+                      >
+                        ↓
+                      </button>
+                      <button
+                        onClick={() => startEdit(b)}
+                        style={{
+                          padding: "0.4rem 0.8rem",
+                          background: "var(--bg-secondary)",
+                          color: "var(--text-primary)",
+                          border: "1px solid var(--border-color)",
+                          borderRadius: "4px",
+                          cursor: "pointer",
+                          fontSize: "0.9rem",
+                        }}
+                      >
+                        सम्पादन गर्नुहोस्
+                      </button>
+                      <button
+                        onClick={() => handleDelete(b._id)}
+                        style={{
+                          padding: "0.4rem 0.8rem",
+                          background: "#D32F2F",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "4px",
+                          cursor: "pointer",
+                          fontSize: "0.9rem",
+                        }}
+                      >
+                        डिलिट
+                      </button>
+                    </td>
+                  </tr>
+                ),
+              )}
+              {books.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={3}
+                    style={{ padding: "2rem", textAlign: "center" }}
+                  >
+                    कुनै पुस्तक भेटिएन।
                   </td>
                 </tr>
-              ) : (
-                <tr key={b._id}>
-                  <td
-                    style={{
-                      padding: "1rem",
-                      borderBottom: "1px solid var(--border-light)",
-                      fontFamily: "var(--font-devanagari)",
-                    }}
-                  >
-                    <ExpandableCell text={b.titleNp} />
-                  </td>
-                  <td
-                    style={{
-                      padding: "1rem",
-                      borderBottom: "1px solid var(--border-light)",
-                    }}
-                  >
-                    <ExpandableCell text={b.typeEn} />
-                  </td>
-                  <td
-                    style={{
-                      padding: "1rem",
-                      borderBottom: "1px solid var(--border-light)",
-                      textAlign: "right",
-                      display: "flex",
-                      gap: "0.5rem",
-                      justifyContent: "flex-end",
-                    }}
-                  >
-                    <button
-                      onClick={() => handleMove(index, "up")}
-                      disabled={index === 0 || isReordering || !!editId}
-                      title="माथि सार्नुहोस्"
-                      style={{
-                        padding: "0.4rem 0.6rem",
-                        background: "var(--bg-secondary)",
-                        color: "var(--text-primary)",
-                        border: "1px solid var(--border-color)",
-                        borderRadius: "4px",
-                        cursor: index === 0 || isReordering || !!editId ? "not-allowed" : "pointer",
-                        fontSize: "0.9rem",
-                        opacity: index === 0 ? 0.35 : 1,
-                      }}
-                    >
-                      ↑
-                    </button>
-                    <button
-                      onClick={() => handleMove(index, "down")}
-                      disabled={index === books.length - 1 || isReordering || !!editId}
-                      title="तल सार्नुहोस्"
-                      style={{
-                        padding: "0.4rem 0.6rem",
-                        background: "var(--bg-secondary)",
-                        color: "var(--text-primary)",
-                        border: "1px solid var(--border-color)",
-                        borderRadius: "4px",
-                        cursor: index === books.length - 1 || isReordering || !!editId ? "not-allowed" : "pointer",
-                        fontSize: "0.9rem",
-                        opacity: index === books.length - 1 ? 0.35 : 1,
-                      }}
-                    >
-                      ↓
-                    </button>
-                    <button
-                      onClick={() => startEdit(b)}
-                      style={{
-                        padding: "0.4rem 0.8rem",
-                        background: "var(--bg-secondary)",
-                        color: "var(--text-primary)",
-                        border: "1px solid var(--border-color)",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                        fontSize: "0.9rem",
-                      }}
-                    >
-                      सम्पादन गर्नुहोस्
-                    </button>
-                    <button
-                      onClick={() => handleDelete(b._id)}
-                      style={{
-                        padding: "0.4rem 0.8rem",
-                        background: "#D32F2F",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                        fontSize: "0.9rem",
-                      }}
-                    >
-                      डिलिट
-                    </button>
-                  </td>
-                </tr>
-              ),
-            )}
-            {books.length === 0 && (
-              <tr>
-                <td
-                  colSpan={3}
-                  style={{ padding: "2rem", textAlign: "center" }}
-                >
-                  कुनै पुस्तक भेटिएन।
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
