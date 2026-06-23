@@ -8,10 +8,13 @@ import {
   createArticle,
   updateArticle,
   deleteArticle,
+  reorderArticles,
+  pinArticle,
 } from "../api/index";
 import type { Article, ArticleFormData } from "../types";
 import { inputStyle, labelStyle } from "../styles/admin";
 import { ExpandableCell } from "./ExpandableCell";
+import { IconPin } from "../components/icons";
 
 export default function ArticlesPage() {
   const { isAuthenticated } = useAuth();
@@ -36,6 +39,7 @@ export default function ArticlesPage() {
   const [editExcerpt, setEditExcerpt] = useState("");
   const [editContent, setEditContent] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isReordering, setIsReordering] = useState(false);
 
   const loadArticles = () => {
     setLoading(true);
@@ -77,6 +81,30 @@ export default function ArticlesPage() {
     try {
       await deleteArticle(id);
       setArticles(articles.filter((a) => a._id !== id));
+    } catch (err: unknown) {
+      alert((err as Error).message || "Unknown error");
+    }
+  };
+
+  const handleMove = async (index: number, direction: "up" | "down") => {
+    const swapIndex = direction === "up" ? index - 1 : index + 1;
+    const next = [...articles];
+    [next[index], next[swapIndex]] = [next[swapIndex], next[index]];
+    setArticles(next);
+    setIsReordering(true);
+    try {
+      await reorderArticles(next.map((a) => a._id));
+    } catch {
+      setArticles(articles); // revert on failure
+    } finally {
+      setIsReordering(false);
+    }
+  };
+
+  const handlePin = async (id: string) => {
+    try {
+      await pinArticle(id);
+      loadArticles();
     } catch (err: unknown) {
       alert((err as Error).message || "Unknown error");
     }
@@ -250,7 +278,7 @@ export default function ArticlesPage() {
             </tr>
           </thead>
           <tbody>
-            {articles.map((a) =>
+            {articles.map((a, index) =>
               editId === a._id ? (
                 <tr key={a._id}>
                   <td
@@ -386,9 +414,61 @@ export default function ArticlesPage() {
                       textAlign: "right",
                       display: "flex",
                       gap: "0.5rem",
+                      alignItems: "center",
                       justifyContent: "flex-end",
                     }}
                   >
+                    <button
+                      onClick={() => handleMove(index, "up")}
+                      disabled={index === 0 || isReordering || !!editId}
+                      title="माथि सार्नुहोस्"
+                      style={{
+                        padding: "0.4rem 0.6rem",
+                        background: "var(--bg-secondary)",
+                        color: "var(--text-primary)",
+                        border: "1px solid var(--border-color)",
+                        borderRadius: "4px",
+                        cursor: index === 0 || isReordering || !!editId ? "not-allowed" : "pointer",
+                        fontSize: "0.9rem",
+                        opacity: index === 0 ? 0.35 : 1,
+                      }}
+                    >
+                      ↑
+                    </button>
+                    <button
+                      onClick={() => handleMove(index, "down")}
+                      disabled={index === articles.length - 1 || isReordering || !!editId}
+                      title="तल सार्नुहोस्"
+                      style={{
+                        padding: "0.4rem 0.6rem",
+                        background: "var(--bg-secondary)",
+                        color: "var(--text-primary)",
+                        border: "1px solid var(--border-color)",
+                        borderRadius: "4px",
+                        cursor: index === articles.length - 1 || isReordering || !!editId ? "not-allowed" : "pointer",
+                        fontSize: "0.9rem",
+                        opacity: index === articles.length - 1 ? 0.35 : 1,
+                      }}
+                    >
+                      ↓
+                    </button>
+                    <button
+                      onClick={() => handlePin(a._id)}
+                      title={a.pinned ? "अनपिन गर्नुहोस्" : "माथि पिन गर्नुहोस्"}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        padding: "0.4rem 0.55rem",
+                        background: a.pinned ? "#b8901f" : "var(--bg-secondary)",
+                        color: a.pinned ? "white" : "var(--text-primary)",
+                        border: a.pinned ? "1px solid #b8901f" : "1px solid var(--border-color)",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <IconPin size={16} />
+                    </button>
                     <button
                       onClick={() => startEdit(a)}
                       style={{

@@ -35,6 +35,8 @@ export interface Article {
   category: "article" | "literature";
   excerpt: string;
   content: string;
+  order?: number;
+  pinned?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -45,6 +47,7 @@ export interface Book {
   typeEn: string;
   yearBs: string;
   order: number;
+  pinned?: boolean;
   coverImage?: string;
   pdfUrl?: string;
 }
@@ -55,6 +58,7 @@ export interface Interview {
   channel: string;
   youtubeId: string;
   order: number;
+  pinned?: boolean;
 }
 
 export interface Song {
@@ -62,6 +66,7 @@ export interface Song {
   title: string;
   youtubeId: string;
   order: number;
+  pinned?: boolean;
 }
 
 export type ArticleFormData = Omit<Article, "_id" | "createdAt" | "updatedAt">;
