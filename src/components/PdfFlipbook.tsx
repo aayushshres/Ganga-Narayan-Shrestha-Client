@@ -126,14 +126,21 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
   const [pageUrls, setPageUrls] = useState<Record<number, string>>({});
   const [thumbUrls, setThumbUrls] = useState<Record<number, string>>({});
 
-  const [twoPage, setTwoPage] = useState(
+  const [autoWide, setAutoWide] = useState(
     () =>
       typeof window !== "undefined" &&
       window.innerWidth >= TWO_PAGE_MIN_WIDTH,
   );
+  // null = follow screen size; true/false = explicit user choice via the toggle.
+  const [manualTwoPage, setManualTwoPage] = useState<boolean | null>(null);
+  const twoPage = manualTwoPage ?? autoWide; // pages per spread
+  const wide = autoWide; // real screen width → thumbnail placement
+
   const [spreadIdx, setSpreadIdx] = useState(0);
   const [zoom, setZoom] = useState(1);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
+  // Pan is applied imperatively (no re-render per move) for smoothness.
+  const panValRef = useRef({ x: 0, y: 0 });
+  const panLayerRef = useRef<HTMLDivElement | null>(null);
   const [dragX, setDragX] = useState(0);
   const [animating, setAnimating] = useState(true);
   const [showThumbs, setShowThumbs] = useState(false);
@@ -144,18 +151,33 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
     [numPages, twoPage],
   );
 
-  const stateRef = useRef({ spreadIdx, spreadsLen: spreads.length, zoom, pan });
-  stateRef.current = { spreadIdx, spreadsLen: spreads.length, zoom, pan };
+  const stateRef = useRef({ spreadIdx, spreadsLen: spreads.length, zoom });
+  stateRef.current = { spreadIdx, spreadsLen: spreads.length, zoom };
   const urlsRef = useRef(pageUrls);
   urlsRef.current = pageUrls;
 
-  const goToSpread = useCallback((idx: number) => {
-    const max = stateRef.current.spreadsLen - 1;
-    const next = Math.min(max, Math.max(0, idx));
-    setSpreadIdx(next);
-    setZoom(1);
-    setPan({ x: 0, y: 0 });
+  // Imperatively move the current page (no React re-render → smooth panning).
+  const livePan = useCallback((x: number, y: number) => {
+    panValRef.current = { x, y };
+    const el = panLayerRef.current;
+    if (el) el.style.transform = `translate(${x}px, ${y}px)`;
   }, []);
+  const resetPan = useCallback(() => {
+    panValRef.current = { x: 0, y: 0 };
+    const el = panLayerRef.current;
+    if (el) el.style.transform = "translate(0px, 0px)";
+  }, []);
+
+  const goToSpread = useCallback(
+    (idx: number) => {
+      const max = stateRef.current.spreadsLen - 1;
+      const next = Math.min(max, Math.max(0, idx));
+      setSpreadIdx(next);
+      setZoom(1);
+      resetPan();
+    },
+    [resetPan],
+  );
 
   const jumpToPage = useCallback(
     (page: number) => {
@@ -235,7 +257,7 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
   // Switch one/two-page layout on resize, keeping the same page anchored.
   useEffect(() => {
     const onResize = () =>
-      setTwoPage(window.innerWidth >= TWO_PAGE_MIN_WIDTH);
+      setAutoWide(window.innerWidth >= TWO_PAGE_MIN_WIDTH);
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
@@ -280,14 +302,14 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
       } else if (e.key === "ArrowUp" || e.key === "ArrowDown") {
         if (stateRef.current.zoom > 1) {
           const d = e.key === "ArrowUp" ? 40 : -40;
-          setPan((p) => ({ ...p, y: p.y + d }));
+          livePan(panValRef.current.x, panValRef.current.y + d);
           e.preventDefault();
         }
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose, goToSpread]);
+  }, [onClose, goToSpread, livePan]);
 
   // Touch gestures: swipe to flip (zoom 1), pinch to zoom, one-finger pan zoomed.
   useEffect(() => {
@@ -314,8 +336,8 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
           g.mode = "pan";
           g.startX = e.touches[0].clientX;
           g.startY = e.touches[0].clientY;
-          g.startPanX = stateRef.current.pan.x;
-          g.startPanY = stateRef.current.pan.y;
+          g.startPanX = panValRef.current.x;
+          g.startPanY = panValRef.current.y;
         } else {
           g.mode = "swipe";
           g.startX = e.touches[0].clientX;
@@ -328,12 +350,12 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
       if (g.mode === "pinch" && e.touches.length >= 2) {
         const z = clampZoom(g.startZoom * (touchDistance(e.touches) / g.startDist));
         setZoom(z);
-        if (z === 1) setPan({ x: 0, y: 0 });
+        if (z === 1) resetPan();
       } else if (g.mode === "pan" && e.touches.length === 1) {
-        setPan({
-          x: g.startPanX + (e.touches[0].clientX - g.startX),
-          y: g.startPanY + (e.touches[0].clientY - g.startY),
-        });
+        livePan(
+          g.startPanX + (e.touches[0].clientX - g.startX),
+          g.startPanY + (e.touches[0].clientY - g.startY),
+        );
       } else if (g.mode === "swipe" && e.touches.length === 1) {
         setDragX(e.touches[0].clientX - g.startX);
       }
@@ -360,13 +382,39 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
       el.removeEventListener("touchmove", onMove);
       el.removeEventListener("touchend", onEnd);
     };
-  }, [goToSpread]);
+    // numPages so listeners (re)attach once the viewport actually mounts.
+  }, [goToSpread, numPages, livePan, resetPan]);
+
+  // Trackpad: ctrl+wheel (pinch) zooms; two-finger scroll pans while zoomed.
+  useEffect(() => {
+    const el = viewportRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      if (e.ctrlKey) {
+        e.preventDefault();
+        const z = clampZoom(stateRef.current.zoom - e.deltaY * 0.012);
+        setZoom(z);
+        if (z === 1) resetPan();
+      } else if (stateRef.current.zoom > 1) {
+        e.preventDefault();
+        livePan(
+          panValRef.current.x - e.deltaX,
+          panValRef.current.y - e.deltaY,
+        );
+      }
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [numPages, livePan, resetPan]);
 
   const setZoomTo = (next: number) => {
     const z = clampZoom(next);
     setZoom(z);
-    if (z === 1) setPan({ x: 0, y: 0 });
+    if (z === 1) resetPan();
   };
+
+  // System font so the page-number input and the "/ N" label match.
+  const numFont = "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
 
   const overlayStyle: React.CSSProperties = {
     position: "fixed",
@@ -413,6 +461,20 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
 
   const cur = spreads[spreadIdx] ?? [0];
 
+  const thumbItems = Array.from({ length: numPages }).map((_, i) => (
+    <Thumb
+      key={i}
+      index={i}
+      url={thumbUrls[i]}
+      active={cur.includes(i)}
+      onVisible={renderThumb}
+      onClick={(p) => {
+        jumpToPage(p);
+        if (!twoPage) setShowThumbs(false);
+      }}
+    />
+  ));
+
   return (
     <div style={overlayStyle} role="dialog" aria-modal="true" aria-label={title}>
       <button onClick={onClose} style={closeBtnStyle} aria-label="बन्द गर्नुहोस्">
@@ -439,17 +501,45 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
       ) : (
         <>
           <div
-            ref={viewportRef}
             style={{
               flex: "1 1 auto",
               minHeight: 0,
               width: "100%",
-              maxWidth: twoPage ? "1100px" : "640px",
-              overflow: "hidden",
-              touchAction: "none",
-              perspective: "2000px",
+              maxWidth: wide ? "1260px" : "640px",
+              display: "flex",
+              gap: "0.75rem",
+              justifyContent: "center",
+              alignItems: "stretch",
             }}
           >
+            {wide && showThumbs && (
+              <div
+                style={{
+                  flex: "0 0 auto",
+                  width: "104px",
+                  height: "100%",
+                  overflowY: "auto",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "6px",
+                  paddingRight: "4px",
+                }}
+              >
+                {thumbItems}
+              </div>
+            )}
+            <div
+              ref={viewportRef}
+              style={{
+                flex: "1 1 auto",
+                minHeight: 0,
+                minWidth: 0,
+                maxWidth: twoPage ? "1100px" : "640px",
+                overflow: "hidden",
+                touchAction: "none",
+                perspective: "2000px",
+              }}
+            >
             <div
               style={{
                 display: "flex",
@@ -489,6 +579,7 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
                     }}
                   >
                     <div
+                      ref={offset === 0 ? panLayerRef : null}
                       style={{
                         width: "100%",
                         height: "100%",
@@ -496,25 +587,30 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
                         gap: "2px",
                         alignItems: "center",
                         justifyContent: "center",
+                        // Pan only — zoom is applied to the image layout size
+                        // (below) so the browser resamples from the hi-res
+                        // source instead of upscaling a small rasterised layer.
+                        // Updated imperatively during gestures; no transition
+                        // so the page tracks the pointer 1:1.
                         transform:
                           offset === 0
-                            ? `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`
+                            ? `translate(${panValRef.current.x}px, ${panValRef.current.y}px)`
                             : "none",
-                        transition: "transform 0.08s linear",
                         willChange: "transform",
                       }}
                     >
-                      {sp.map((p) =>
-                        near && pageUrls[p] ? (
+                      {sp.map((p) => {
+                        const z = offset === 0 ? zoom : 1;
+                        const wPct = (sp.length === 2 ? 50 : 100) * z;
+                        return near && pageUrls[p] ? (
                           <img
                             key={p}
                             src={pageUrls[p]}
                             alt={`${p + 1}`}
                             draggable={false}
                             style={{
-                              maxWidth: sp.length === 2 ? "50%" : "100%",
-                              maxHeight: "100%",
-                              objectFit: "contain",
+                              maxWidth: `${wPct}%`,
+                              maxHeight: `${100 * z}%`,
                               boxShadow: "0 6px 24px rgba(0,0,0,0.45)",
                               userSelect: "none",
                             }}
@@ -523,8 +619,8 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
                           <span key={p} style={{ color: "rgba(255,255,255,0.5)" }}>
                             …
                           </span>
-                        ) : null,
-                      )}
+                        ) : null;
+                      })}
                     </div>
                     {/* depth shadow over turned (non-current) spreads */}
                     <div
@@ -542,32 +638,21 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
               })}
             </div>
           </div>
+          </div>
 
-          {showThumbs && (
+          {!wide && showThumbs && (
             <div
               style={{
                 display: "flex",
                 gap: "6px",
                 overflowX: "auto",
                 width: "100%",
-                maxWidth: "1100px",
+                maxWidth: "640px",
                 padding: "0.6rem 0.2rem",
                 marginTop: "0.5rem",
               }}
             >
-              {Array.from({ length: numPages }).map((_, i) => (
-                <Thumb
-                  key={i}
-                  index={i}
-                  url={thumbUrls[i]}
-                  active={cur.includes(i)}
-                  onVisible={renderThumb}
-                  onClick={(p) => {
-                    jumpToPage(p);
-                    setShowThumbs(false);
-                  }}
-                />
-              ))}
+              {thumbItems}
             </div>
           )}
 
@@ -622,9 +707,12 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
                   background: "rgba(255,255,255,0.1)",
                   color: "white",
                   fontSize: "0.95rem",
+                  fontFamily: numFont,
                 }}
               />
-              <span style={{ whiteSpace: "nowrap" }}>/ {numPages}</span>
+              <span style={{ whiteSpace: "nowrap", fontFamily: numFont, fontSize: "0.95rem" }}>
+                / {numPages}
+              </span>
             </span>
 
             <button
@@ -646,6 +734,14 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
               title="Zoom in"
             >
               +
+            </button>
+            <button
+              style={{ ...controlBtnStyle, fontSize: "1rem", letterSpacing: "1px" }}
+              onClick={() => setManualTwoPage(!twoPage)}
+              aria-label="एक वा दुई पाना"
+              title={twoPage ? "एक पाना देखाउनुहोस्" : "दुई पाना देखाउनुहोस्"}
+            >
+              {twoPage ? "▯▯" : "▯"}
             </button>
             <button
               style={{
