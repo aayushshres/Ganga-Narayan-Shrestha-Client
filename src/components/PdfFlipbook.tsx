@@ -86,12 +86,6 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
     };
   }, [url]);
 
-  // Once pages are mounted in the flipbook, start at the first page.
-  useEffect(() => {
-    if (ready) {
-      flipBook.current?.pageFlip().flip(0);
-    }
-  }, [ready]);
 
   const overlayStyle: React.CSSProperties = {
     position: "fixed",
@@ -178,6 +172,8 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
             drawShadow={true}
             flippingTime={700}
             maxShadowOpacity={0.5}
+            startPage={0}
+            onInit={() => flipBook.current?.pageFlip()?.flip(0)}
             onFlip={(e: { data: number }) => setCurrentPage(e.data)}
           >
             {pages.map((src, i) => (
@@ -217,7 +213,7 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
           >
             <button
               style={controlBtnStyle}
-              onClick={() => flipBook.current?.pageFlip().flipPrev()}
+              onClick={() => flipBook.current?.pageFlip()?.flipPrev()}
             >
               ← अघिल्लो
             </button>
@@ -226,7 +222,7 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
             </span>
             <button
               style={controlBtnStyle}
-              onClick={() => flipBook.current?.pageFlip().flipNext()}
+              onClick={() => flipBook.current?.pageFlip()?.flipNext()}
             >
               अर्को →
             </button>
