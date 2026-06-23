@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useSmartBack } from "../hooks/useSmartBack";
 import { useAppContext } from "../context/AppContext";
 import type { Song, Translatable } from "../types";
 import { t } from "../types";
@@ -13,7 +13,7 @@ const pageTitle: Translatable = { en: "All Songs", np: "सबै गीतह�
 export default function AllSongs() {
   const { lang } = useAppContext();
   const [activeVideo, setActiveVideo] = useState<string | null>(null);
-  const navigate = useNavigate();
+  const goBack = useSmartBack("/");
 
   const [songs, setSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,7 +27,7 @@ export default function AllSongs() {
 
   return (
     <div className="detail-page">
-      <button onClick={() => navigate(-1)} className="detail-page__back" aria-label="back"><IconArrowLeft /></button>
+      <button onClick={goBack} className="detail-page__back" aria-label="back"><IconArrowLeft /></button>
       <h1 className="detail-page__title">{t(pageTitle, lang)}</h1>
 
       <div className="media-grid latest-list--full">

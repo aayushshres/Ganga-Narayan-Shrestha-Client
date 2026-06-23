@@ -1,5 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { useSmartBack } from "../hooks/useSmartBack";
 import { useAppContext } from "../context/AppContext";
 import { fetchBook } from "../api/index";
 import { usePageMeta } from "../hooks/usePageMeta";
@@ -16,7 +17,7 @@ const API_URL = import.meta.env.VITE_API_URL as string;
 export default function BookDetail() {
   const { id } = useParams<{ id: string }>();
   const { lang, theme } = useAppContext();
-  const navigate = useNavigate();
+  const goBack = useSmartBack("/all-books");
 
   const [book, setBook] = useState<Book | null>(null);
   const [loading, setLoading] = useState(true);
@@ -77,7 +78,7 @@ export default function BookDetail() {
     return (
       <div className="detail-page">
         <button
-          onClick={() => navigate(-1)}
+          onClick={goBack}
           className="detail-page__back"
           aria-label="back"
         >
@@ -100,7 +101,7 @@ export default function BookDetail() {
     return (
       <div className="detail-page">
         <button
-          onClick={() => navigate(-1)}
+          onClick={goBack}
           className="detail-page__back"
           aria-label="back"
         >
@@ -119,7 +120,7 @@ export default function BookDetail() {
   return (
     <div className="detail-page">
       <button
-        onClick={() => navigate(-1)}
+        onClick={goBack}
         className="detail-page__back"
         aria-label="back"
       >

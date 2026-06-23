@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { useSmartBack } from "../hooks/useSmartBack";
 import { useAppContext } from "../context/AppContext";
 import type { Book, Translatable } from "../types";
 import { t } from "../types";
@@ -14,7 +15,7 @@ const pageTitle: Translatable = {
 
 export default function AllBooks() {
   const { lang, theme } = useAppContext();
-  const navigate = useNavigate();
+  const goBack = useSmartBack("/");
 
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,7 +30,7 @@ export default function AllBooks() {
   return (
     <div className="detail-page">
       <button
-        onClick={() => navigate(-1)}
+        onClick={goBack}
         className="detail-page__back"
         aria-label="back"
       >

@@ -14,8 +14,8 @@ export function usePageMeta(meta: PageMeta | null): void {
     if (!meta) return;
     const { title, description, ogImageUrl, canonicalUrl } = meta;
 
-    const originalTitle = document.title;
-    document.title = title;
+    // document.title is owned by the page component (it resets to the site name
+    // on unmount). Setting it here too made the title stick on back navigation.
 
     const tagDefs = [
       { property: "og:type", content: "article" },
@@ -50,7 +50,6 @@ export function usePageMeta(meta: PageMeta | null): void {
     }
 
     return () => {
-      document.title = originalTitle;
       for (const el of created) el.remove();
       for (const { el, prev } of updated) el.setAttribute("content", prev);
     };

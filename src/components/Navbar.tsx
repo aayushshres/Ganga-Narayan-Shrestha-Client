@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
 import { t } from "../types";
 import type { Translatable } from "../types";
@@ -20,6 +21,27 @@ const navItems: { href: string; label: Translatable }[] = [
 export default function Navbar() {
   const { theme, lang, setTheme, setLang } = useAppContext();
   const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const onHome = location.pathname === "/";
+
+  // Section links live on the homepage. From another page, navigate home with
+  // the hash so ScrollManager scrolls to the section after it mounts.
+  const goToSection = (href: string) => {
+    setMenuOpen(false);
+    if (onHome) {
+      const el = document.querySelector(href);
+      if (el) el.scrollIntoView({ behavior: "smooth" });
+    } else {
+      navigate("/" + href);
+    }
+  };
+
+  const goHome = () => {
+    setMenuOpen(false);
+    if (onHome) window.scrollTo({ top: 0, behavior: "smooth" });
+    else navigate("/");
+  };
 
   // Close mobile menu when clicking outside
   useEffect(() => {
@@ -52,19 +74,27 @@ export default function Navbar() {
   return (
     <nav className="navbar" id="navbar">
       <div className="nav-brand">
-        <span>{t(brand, lang)}</span>
+        <span
+          role="link"
+          tabIndex={0}
+          style={{ cursor: "pointer" }}
+          onClick={goHome}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") goHome();
+          }}
+        >
+          {t(brand, lang)}
+        </span>
       </div>
 
       <ul className={`nav-links${menuOpen ? " open" : ""}`} id="navLinks">
         {navItems.map((item) => (
           <li key={item.href}>
             <a
-              href={item.href}
+              href={onHome ? item.href : `/${item.href}`}
               onClick={(e) => {
                 e.preventDefault();
-                setMenuOpen(false);
-                const el = document.querySelector(item.href);
-                if (el) el.scrollIntoView({ behavior: "smooth" });
+                goToSection(item.href);
               }}
             >
               {t(item.label, lang)}

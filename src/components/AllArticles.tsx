@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { useSmartBack } from "../hooks/useSmartBack";
 import { useAppContext } from "../context/AppContext";
 import type { Article, Translatable } from "../types";
 import { t } from "../types";
@@ -14,7 +15,7 @@ const PAGE_LIMIT = 20;
 
 export default function AllArticles() {
   const { lang } = useAppContext();
-  const navigate = useNavigate();
+  const goBack = useSmartBack("/");
 
   const [entries, setEntries] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
@@ -75,7 +76,7 @@ export default function AllArticles() {
 
   return (
     <div className="detail-page">
-      <button onClick={() => navigate(-1)} className="detail-page__back" aria-label="back"><IconArrowLeft /></button>
+      <button onClick={goBack} className="detail-page__back" aria-label="back"><IconArrowLeft /></button>
       <h1 className="detail-page__title">{t(pageTitle, lang)}</h1>
 
       <div style={{ display: "flex", gap: "1rem", marginBottom: "1.5rem", flexWrap: "wrap", justifyContent: "center" }}>

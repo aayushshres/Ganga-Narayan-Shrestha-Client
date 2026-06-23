@@ -1,10 +1,10 @@
 import { useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppProvider, useAppContext } from "./context/AppContext";
-import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import Timeline from "./components/Timeline";
-import Footer from "./components/Footer";
+import PublicLayout from "./components/PublicLayout";
+import ScrollManager from "./components/ScrollManager";
 
 import Works from "./components/Works";
 import Discover from "./components/Discover";
@@ -27,7 +27,6 @@ import SongsPage from "./admin/SongsPage";
 function HomePage() {
   return (
     <>
-      <Navbar />
       <Hero />
       <hr className="section-divider" />
       <Timeline />
@@ -35,7 +34,6 @@ function HomePage() {
       <Works />
       <hr className="section-divider" />
       <Discover />
-      <Footer />
     </>
   );
 }
@@ -57,25 +55,31 @@ function AppInner() {
   }, [lang]);
 
   return (
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/all-articles" element={<AllArticles />} />
-      <Route path="/articles/:id" element={<ArticleDetail />} />
-      <Route path="/all-books" element={<AllBooks />} />
-      <Route path="/books/:id" element={<BookDetail />} />
-      <Route path="/all-interviews" element={<AllInterviews />} />
-      <Route path="/all-songs" element={<AllSongs />} />
+    <>
+      <ScrollManager />
+      <Routes>
+        {/* Public pages share the navbar + footer */}
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/all-articles" element={<AllArticles />} />
+          <Route path="/articles/:id" element={<ArticleDetail />} />
+          <Route path="/all-books" element={<AllBooks />} />
+          <Route path="/books/:id" element={<BookDetail />} />
+          <Route path="/all-interviews" element={<AllInterviews />} />
+          <Route path="/all-songs" element={<AllSongs />} />
+        </Route>
 
-      {/* Admin routes */}
-      <Route path="/admin/login" element={<LoginPage />} />
-      <Route path="/admin" element={<AdminLayout />}>
-        <Route index element={<DashboardPage />} />
-        <Route path="articles" element={<ArticlesPage />} />
-        <Route path="books" element={<BooksPage />} />
-        <Route path="interviews" element={<InterviewsPage />} />
-        <Route path="songs" element={<SongsPage />} />
-      </Route>
-    </Routes>
+        {/* Admin routes (own layout, no public navbar) */}
+        <Route path="/admin/login" element={<LoginPage />} />
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<DashboardPage />} />
+          <Route path="articles" element={<ArticlesPage />} />
+          <Route path="books" element={<BooksPage />} />
+          <Route path="interviews" element={<InterviewsPage />} />
+          <Route path="songs" element={<SongsPage />} />
+        </Route>
+      </Routes>
+    </>
   );
 }
 

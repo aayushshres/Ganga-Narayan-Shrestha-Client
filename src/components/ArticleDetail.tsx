@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { useSmartBack } from "../hooks/useSmartBack";
 import { useAppContext } from "../context/AppContext";
 import { fetchArticle } from "../api/index";
 import { formatPostDate } from "../utils/formatDate";
@@ -17,7 +18,7 @@ const API_URL = import.meta.env.VITE_API_URL as string;
 export default function ArticleDetail() {
   const { id } = useParams<{ id: string }>();
   const { lang } = useAppContext();
-  const navigate = useNavigate();
+  const goBack = useSmartBack("/all-articles");
 
   const [article, setArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
@@ -54,7 +55,7 @@ export default function ArticleDetail() {
   if (loading) {
     return (
       <div className="detail-page">
-        <button onClick={() => navigate(-1)} className="detail-page__back" aria-label="back"><IconArrowLeft /></button>
+        <button onClick={goBack} className="detail-page__back" aria-label="back"><IconArrowLeft /></button>
         <p style={{ textAlign: "center", padding: "4rem", color: "var(--text-muted)" }}>
           {lang === "np" ? "लोड हुँदैछ..." : "Loading..."}
         </p>
@@ -65,7 +66,7 @@ export default function ArticleDetail() {
   if (notFound || !article) {
     return (
       <div className="detail-page">
-        <button onClick={() => navigate(-1)} className="detail-page__back" aria-label="back"><IconArrowLeft /></button>
+        <button onClick={goBack} className="detail-page__back" aria-label="back"><IconArrowLeft /></button>
         <h1 className="detail-page__title">
           {lang === "np" ? "पृष्ठ भेटिएन" : "Page Not Found"}
         </h1>
@@ -77,7 +78,7 @@ export default function ArticleDetail() {
 
   return (
     <div className="detail-page">
-      <button onClick={() => navigate(-1)} className="detail-page__back" aria-label="back"><IconArrowLeft /></button>
+      <button onClick={goBack} className="detail-page__back" aria-label="back"><IconArrowLeft /></button>
       <div style={{ textAlign: "center" }}>
         <span className={`latest-card__badge ${categoryColorMap[article.category]}`}>
           {lang === "np" ? categoryLabel.np : categoryLabel.en}
