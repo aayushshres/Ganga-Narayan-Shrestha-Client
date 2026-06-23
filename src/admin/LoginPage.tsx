@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { inputStyle } from '../styles/admin';
+import { IconEye, IconEyeOff } from '../components/icons';
 
 export default function LoginPage() {
   const { isAuthenticated, login } = useAuth();
@@ -9,6 +10,7 @@ export default function LoginPage() {
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -76,14 +78,38 @@ export default function LoginPage() {
             <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>
               पासवर्ड
             </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="पासवर्ड"
-              style={inputStyle}
-              onKeyDown={(e) => { if (e.key === 'Enter') handleLogin(); }}
-            />
+            <div style={{ position: 'relative' }}>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="पासवर्ड"
+                style={{ ...inputStyle, paddingRight: '2.75rem' }}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleLogin(); }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((s) => !s)}
+                aria-label={showPassword ? 'पासवर्ड लुकाउनुहोस्' : 'पासवर्ड देखाउनुहोस्'}
+                title={showPassword ? 'Hide password' : 'Show password'}
+                style={{
+                  position: 'absolute',
+                  top: '50%',
+                  right: '0.6rem',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  padding: '0.25rem',
+                  cursor: 'pointer',
+                  color: 'var(--text-muted)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {showPassword ? <IconEyeOff size={20} /> : <IconEye size={20} />}
+              </button>
+            </div>
           </div>
           {error && <p style={{ color: '#D32F2F', margin: 0 }}>{error}</p>}
           <button
