@@ -19,6 +19,7 @@ const MAX_ZOOM = 3;
 const RENDER_WIDTH = 2000; // full page raster width (sharp when zoomed)
 const THUMB_WIDTH = 150; // thumbnail raster width
 const TWO_PAGE_MIN_WIDTH = 820; // viewport width to switch to a two-page spread
+const ZOOM_PRESETS = [1, 1.25, 1.5, 2, 2.5, 3]; // 100% – 300%
 
 const clampZoom = (z: number) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, z));
 
@@ -191,6 +192,7 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
   const [dragX, setDragX] = useState(0);
   const [animating, setAnimating] = useState(true);
   const [showThumbs, setShowThumbs] = useState(false);
+  const [showZoomMenu, setShowZoomMenu] = useState(false);
   const [jumpStr, setJumpStr] = useState("1");
 
   const spreads = useMemo(
@@ -203,12 +205,39 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
   const urlsRef = useRef(pageUrls);
   urlsRef.current = pageUrls;
 
-  // Imperatively move the current page (no React re-render → smooth panning).
-  const livePan = useCallback((x: number, y: number) => {
-    panValRef.current = { x, y };
+  // Bound the pan so the page edges can't be dragged past the viewport edges
+  // (no "infinite canvas"). Limit = half the overflow on each axis.
+  const clampPanXY = useCallback((x: number, y: number) => {
+    const vp = viewportRef.current;
     const el = panLayerRef.current;
-    if (el) el.style.transform = `translate(${x}px, ${y}px)`;
+    if (!vp || !el) return { x, y };
+    const imgs = el.querySelectorAll("img");
+    if (!imgs.length) return { x, y };
+    let contentW = 0;
+    let contentH = 0;
+    imgs.forEach((img, i) => {
+      const r = img.getBoundingClientRect();
+      contentW += r.width + (i > 0 ? 2 : 0); // 2px flex gap between pages
+      contentH = Math.max(contentH, r.height);
+    });
+    const maxX = Math.max(0, (contentW - vp.clientWidth) / 2);
+    const maxY = Math.max(0, (contentH - vp.clientHeight) / 2);
+    return {
+      x: Math.min(maxX, Math.max(-maxX, x)),
+      y: Math.min(maxY, Math.max(-maxY, y)),
+    };
   }, []);
+
+  // Imperatively move the current page (no React re-render → smooth panning).
+  const livePan = useCallback(
+    (x: number, y: number) => {
+      const c = clampPanXY(x, y);
+      panValRef.current = c;
+      const el = panLayerRef.current;
+      if (el) el.style.transform = `translate(${c.x}px, ${c.y}px)`;
+    },
+    [clampPanXY],
+  );
   const resetPan = useCallback(() => {
     panValRef.current = { x: 0, y: 0 };
     const el = panLayerRef.current;
@@ -456,8 +485,23 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
     return () => el.removeEventListener("wheel", onWheel);
   }, [numPages, livePan, resetPan]);
 
+  // Re-clamp the pan whenever the zoom changes (zooming out shrinks the bounds).
+  useEffect(() => {
+    livePan(panValRef.current.x, panValRef.current.y);
+  }, [zoom, livePan]);
+
   // System font so the page-number input and the "/ N" label match.
   const numFont = "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
+
+  const applyZoom = (z: number) => {
+    const zz = clampZoom(z);
+    setZoom(zz);
+    if (zz === 1) resetPan();
+    setShowZoomMenu(false);
+  };
+
+  // When zoomed, give the page the whole screen and float the controls on top.
+  const zoomed = zoom > 1;
 
   const overlayStyle: React.CSSProperties = {
     position: "fixed",
@@ -467,14 +511,15 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    padding: "1rem",
+    padding: zoomed ? 0 : "1rem",
   };
 
   const closeBtnStyle: React.CSSProperties = {
-    position: "absolute",
+    position: "fixed",
     top: "1rem",
     right: "1rem",
-    background: "rgba(255,255,255,0.15)",
+    background: "rgba(0,0,0,0.55)",
+    backdropFilter: "blur(4px)",
     color: "white",
     border: "none",
     borderRadius: "50%",
@@ -485,7 +530,7 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
     alignItems: "center",
     justifyContent: "center",
     padding: 0,
-    zIndex: 1001,
+    zIndex: 1002,
   };
 
   const controlBtnStyle: React.CSSProperties = {
@@ -512,10 +557,7 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
       url={thumbUrls[i]}
       active={cur.includes(i)}
       onVisible={renderThumb}
-      onClick={(p) => {
-        jumpToPage(p);
-        if (!twoPage) setShowThumbs(false);
-      }}
+      onClick={(p) => jumpToPage(p)}
     />
   ));
 
@@ -549,7 +591,7 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
               flex: "1 1 auto",
               minHeight: 0,
               width: "100%",
-              maxWidth: wide ? "1260px" : "640px",
+              maxWidth: zoomed ? "none" : wide ? "1260px" : "640px",
               display: "flex",
               gap: "0.75rem",
               justifyContent: "center",
@@ -578,7 +620,7 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
                 flex: "1 1 auto",
                 minHeight: 0,
                 minWidth: 0,
-                maxWidth: twoPage ? "1100px" : "640px",
+                maxWidth: zoomed ? "none" : twoPage ? "1100px" : "640px",
                 overflow: "hidden",
                 touchAction: "none",
                 perspective: "2000px",
@@ -701,15 +743,35 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
           )}
 
           <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.6rem",
-              marginTop: "1rem",
-              color: "white",
-              flexWrap: "wrap",
-              justifyContent: "center",
-            }}
+            style={
+              zoomed
+                ? {
+                    position: "absolute",
+                    bottom: "1rem",
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.6rem",
+                    color: "white",
+                    flexWrap: "wrap",
+                    justifyContent: "center",
+                    zIndex: 1001,
+                    background: "rgba(0,0,0,0.55)",
+                    padding: "0.5rem 0.9rem",
+                    borderRadius: "999px",
+                    backdropFilter: "blur(4px)",
+                  }
+                : {
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.6rem",
+                    marginTop: "1rem",
+                    color: "white",
+                    flexWrap: "wrap",
+                    justifyContent: "center",
+                  }
+            }
           >
             <button
               style={{
@@ -786,6 +848,74 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
             >
               <IconGrid />
             </button>
+
+            {/* Zoom level: shows %, click for a preset menu (100% = reset). */}
+            <div style={{ position: "relative", display: "inline-flex" }}>
+              <button
+                style={{
+                  ...controlBtnStyle,
+                  width: "auto",
+                  minWidth: "62px",
+                  padding: "0 0.7rem",
+                  borderRadius: "22px",
+                  fontFamily: numFont,
+                  fontSize: "0.9rem",
+                }}
+                onClick={() => setShowZoomMenu((s) => !s)}
+                aria-label="जुम स्तर"
+                title="Zoom"
+              >
+                {Math.round(zoom * 100)}%
+              </button>
+              {showZoomMenu && (
+                <>
+                  <div
+                    onClick={() => setShowZoomMenu(false)}
+                    style={{ position: "fixed", inset: 0, zIndex: 1001 }}
+                  />
+                  <div
+                    style={{
+                      position: "absolute",
+                      bottom: "calc(100% + 8px)",
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      background: "rgba(20,20,20,0.97)",
+                      border: "1px solid rgba(255,255,255,0.15)",
+                      borderRadius: "8px",
+                      padding: "4px",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "2px",
+                      zIndex: 1002,
+                      boxShadow: "0 6px 20px rgba(0,0,0,0.5)",
+                    }}
+                  >
+                    {ZOOM_PRESETS.map((z) => (
+                      <button
+                        key={z}
+                        onClick={() => applyZoom(z)}
+                        style={{
+                          background:
+                            Math.abs(zoom - z) < 0.001
+                              ? "var(--crimson)"
+                              : "transparent",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "5px",
+                          padding: "0.4rem 1.2rem",
+                          cursor: "pointer",
+                          fontFamily: numFont,
+                          fontSize: "0.9rem",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {Math.round(z * 100)}%
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </>
       )}
