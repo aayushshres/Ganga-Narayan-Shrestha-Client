@@ -47,10 +47,11 @@ export const PLATFORM_LABELS: Record<SocialPlatform, string> = {
   website: "Website",
 };
 
-// Build the correct href for a platform's stored value.
+// Build the correct href for a platform's stored value. Only allow safe
+// schemes so a bad stored value can't become a javascript:/data: link.
 export function socialHref(platform: SocialPlatform, url: string): string {
   if (platform === "email") {
     return url.startsWith("mailto:") ? url : `mailto:${url}`;
   }
-  return url;
+  return /^https?:\/\//i.test(url) ? url : "#";
 }
