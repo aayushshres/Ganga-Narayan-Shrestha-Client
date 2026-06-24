@@ -7,6 +7,7 @@ import { formatPostDate } from "../utils/formatDate";
 import { categoryColorMap, categoryLabelMap } from "../utils/article";
 import { usePageMeta } from "../hooks/usePageMeta";
 import type { PageMeta } from "../hooks/usePageMeta";
+import { useJsonLd } from "../hooks/useJsonLd";
 import DOMPurify from "dompurify";
 import type { Article } from "../types";
 import { IconArrowLeft } from "./icons";
@@ -51,6 +52,23 @@ export default function ArticleDetail() {
   }, [id, article]);
 
   usePageMeta(pageMeta);
+
+  useJsonLd(
+    article && pageMeta
+      ? {
+          "@context": "https://schema.org",
+          "@type": "Article",
+          headline: article.title,
+          description: article.excerpt,
+          image: pageMeta.ogImageUrl,
+          datePublished: article.createdAt,
+          dateModified: article.updatedAt ?? article.createdAt,
+          author: { "@type": "Person", name: "Ganga Narayan Shrestha" },
+          publisher: { "@type": "Person", name: "Ganga Narayan Shrestha" },
+          mainEntityOfPage: pageMeta.canonicalUrl,
+        }
+      : null,
+  );
 
   if (loading) {
     return (

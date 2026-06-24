@@ -5,6 +5,7 @@ import { useAppContext } from "../context/AppContext";
 import { fetchBook } from "../api/index";
 import { usePageMeta } from "../hooks/usePageMeta";
 import type { PageMeta } from "../hooks/usePageMeta";
+import { useJsonLd } from "../hooks/useJsonLd";
 import type { Book } from "../types";
 import BookCover from "./BookCover";
 import { IconArrowLeft, IconBook, IconDownload } from "./icons";
@@ -54,6 +55,20 @@ export default function BookDetail() {
   }, [id, book]);
 
   usePageMeta(pageMeta);
+
+  useJsonLd(
+    book && pageMeta
+      ? {
+          "@context": "https://schema.org",
+          "@type": "Book",
+          name: book.titleNp,
+          bookFormat: book.typeEn,
+          image: pageMeta.ogImageUrl,
+          author: { "@type": "Person", name: "Ganga Narayan Shrestha" },
+          url: pageMeta.canonicalUrl,
+        }
+      : null,
+  );
 
   const handleDownload = async () => {
     if (!book?.pdfUrl) return;

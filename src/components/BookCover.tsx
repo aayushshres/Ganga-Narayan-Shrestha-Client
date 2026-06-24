@@ -20,10 +20,12 @@ export default function BookCover({ titleNp, theme, coverImage }: BookCoverProps
         src={coverImage}
         alt={titleNp}
         draggable={false}
+        loading="lazy"
+        decoding="async"
         style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "4px" }}
       />
     );
   }
 
-  return <img src={svgURI} alt={titleNp} draggable={false} />;
+  return <img src={svgURI} alt={titleNp} draggable={false} loading="lazy" decoding="async" />;
 }

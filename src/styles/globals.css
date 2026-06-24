@@ -1489,3 +1489,41 @@ body.lang-np .media-card__meta {
   height: 100%;
   border: none;
 }
+
+/* ─── Accessibility ─────────────────────────────────────────────────────────
+   Visible keyboard focus, a skip-to-content link, and a screen-reader-only
+   utility. Pointer users are unaffected (focus ring shows only for :focus-visible). */
+:focus-visible {
+  outline: 3px solid var(--crimson, #8b1a1a);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translateY(-120%);
+  z-index: 2000;
+  background: var(--crimson, #8b1a1a);
+  color: #fff;
+  padding: 0.6rem 1rem;
+  border-radius: 0 0 6px 0;
+  text-decoration: none;
+  transition: transform 0.15s ease;
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

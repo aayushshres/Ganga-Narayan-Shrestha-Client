@@ -7,8 +7,14 @@ import Footer from "./Footer";
 export default function PublicLayout() {
   return (
     <>
+      {/* Keyboard/screen-reader users can jump past the navbar straight to content. */}
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
       <Navbar />
-      <Outlet />
+      <main id="main-content">
+        <Outlet />
+      </main>
       <Footer />
     </>
   );

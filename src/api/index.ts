@@ -19,13 +19,21 @@ export function setToken(t: string | null): void {
   else sessionStorage.removeItem("admin_token");
 }
 
-const _cache = new Map<string, unknown>();
+// Short-lived GET cache. A TTL keeps a long-open public tab from serving stale
+// content indefinitely after the admin edits something in another tab — entries
+// older than CACHE_TTL_MS are refetched. Writes still clear the whole cache.
+const CACHE_TTL_MS = 60_000;
+const _cache = new Map<string, { data: unknown; ts: number }>();
 
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
   const method = (options?.method ?? "GET").toUpperCase();
 
-  if (method === "GET" && _cache.has(url)) {
-    return _cache.get(url) as T;
+  if (method === "GET") {
+    const hit = _cache.get(url);
+    if (hit && Date.now() - hit.ts < CACHE_TTL_MS) {
+      return hit.data as T;
+    }
+    if (hit) _cache.delete(url); // expired
   }
 
   const authHeaders: Record<string, string> = _token
@@ -48,7 +56,7 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
   }
   const data = (await res.json()) as T;
   if (method === "GET") {
-    _cache.set(url, data);
+    _cache.set(url, { data, ts: Date.now() });
   } else {
     _cache.clear();
   }

@@ -42,6 +42,8 @@ export default function Hero() {
             className="hero-image"
             src={`${import.meta.env.BASE_URL}portrait.png`}
             alt="कम्रेड गंगानारायण श्रेष्ठ — Comrade Ganga Narayan Shrestha"
+            fetchPriority="high"
+            decoding="async"
           />
         </div>
       </div>

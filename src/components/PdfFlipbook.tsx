@@ -163,6 +163,7 @@ function Thumb({
 }
 
 export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
+  const overlayRef = useRef<HTMLDivElement | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const pdfRef = useRef<PDFDocumentProxy | null>(null);
   const renderingRef = useRef<Set<number>>(new Set());
@@ -364,6 +365,43 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
       spreads[s]?.forEach((p) => renderPage(p));
     });
   }, [spreadIdx, spreads, numPages, renderPage]);
+
+  // Accessibility: move focus into the dialog on open, keep Tab inside it, and
+  // restore focus to whatever opened it on close.
+  useEffect(() => {
+    const opener = document.activeElement as HTMLElement | null;
+    overlayRef.current?.focus();
+
+    const onTab = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+      const root = overlayRef.current;
+      if (!root) return;
+      const focusable = root.querySelectorAll<HTMLElement>(
+        'button, [href], input, [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusable.length) {
+        e.preventDefault();
+        root.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement;
+      if (e.shiftKey && (active === first || active === root)) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", onTab);
+    return () => {
+      document.removeEventListener("keydown", onTab);
+      opener?.focus?.();
+    };
+  }, []);
 
   // Keyboard: ← / → flip, ↑ / ↓ pan when zoomed, Esc closes.
   useEffect(() => {
@@ -631,7 +669,14 @@ export default function PdfFlipbook({ url, title, onClose }: PdfFlipbookProps) {
   ));
 
   return (
-    <div style={overlayStyle} role="dialog" aria-modal="true" aria-label={title}>
+    <div
+      ref={overlayRef}
+      tabIndex={-1}
+      style={overlayStyle}
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+    >
       <button onClick={onClose} style={closeBtnStyle} aria-label="बन्द गर्नुहोस्">
         <IconClose />
       </button>
