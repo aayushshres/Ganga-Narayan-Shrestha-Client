@@ -101,7 +101,7 @@ export default function ArticleDetail() {
           paddingTop: "2rem",
         }}
       >
-        <ShareButton title={article.title} text={article.excerpt} lang={lang} iconOnly />
+        <ShareButton title={article.title} text={article.excerpt} lang={lang} iconOnly tooltipPosition="bottom" />
       </div>
     </div>
   );

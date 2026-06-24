@@ -10,11 +10,13 @@ export default function ShareButton({
   text,
   lang,
   iconOnly = false,
+  tooltipPosition = "top",
 }: {
   title: string;
   text?: string;
   lang: Lang;
   iconOnly?: boolean;
+  tooltipPosition?: "top" | "bottom";
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -69,7 +71,9 @@ export default function ShareButton({
             role="status"
             style={{
               position: "absolute",
-              bottom: "calc(100% + 8px)",
+              ...(tooltipPosition === "bottom"
+                ? { top: "calc(100% + 8px)" }
+                : { bottom: "calc(100% + 8px)" }),
               left: "50%",
               transform: "translateX(-50%)",
               background: "var(--crimson)",

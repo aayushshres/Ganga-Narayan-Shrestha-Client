@@ -192,7 +192,7 @@ export default function BookDetail() {
               marginTop: "1rem",
             }}
           >
-            <ShareButton title={book.titleNp} lang={lang} iconOnly />
+            <ShareButton title={book.titleNp} lang={lang} iconOnly tooltipPosition="bottom" />
             <button
               onClick={handleDownload}
               onMouseEnter={() => setDlHover(true)}
